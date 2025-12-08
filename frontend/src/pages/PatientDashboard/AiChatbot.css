@@ -1,0 +1,103 @@
+.chatbot-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 150px); /* Adjust height based on your layout */
+}
+
+.chatbot-container h2 {
+  color: #ffffff;
+  border-bottom: 2px solid #3A86FF;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.messages-window {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.message {
+  padding: 12px 18px;
+  border-radius: 18px;
+  max-width: 70%;
+  line-height: 1.5;
+  white-space: pre-wrap; /* Allows line breaks in messages */
+}
+
+.message.user {
+  background-color: #3A86FF;
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.message.bot {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.message-form {
+  display: flex;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.message-form input {
+  flex-grow: 1;
+  padding: 15px;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #e0e0e0;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.message-form button {
+  background-color: #3A86FF;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.message-form button:hover {
+  background-color: #296dcc;
+}
+
+/* Styles for the "thinking..." indicator */
+.message.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  background-color: #9e9e9e;
+  border-radius: 50%;
+  display: inline-block;
+  animation: wave 1.3s infinite;
+}
+
+.message.typing-indicator span:nth-of-type(2) {
+  animation-delay: -1.1s;
+}
+
+.message.typing-indicator span:nth-of-type(3) {
+  animation-delay: -0.9s;
+}
+
+@keyframes wave {
+  0%, 60%, 100% {
+    transform: initial;
+  }
+  30% {
+    transform: translateY(-8px);
+  }
+}

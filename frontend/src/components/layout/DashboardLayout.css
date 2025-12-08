@@ -1,0 +1,87 @@
+.dashboard-container {
+  display: flex; /* <-- This makes it a flex container */
+  height: 100vh;
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar {
+  width: 250px; /* <-- Sidebar has a fixed width */
+  background-color: #1e1e1e;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #2a2a2a;
+  flex-shrink: 0; /* Prevents sidebar from shrinking */
+}
+
+.sidebar-header {
+  padding: 20px;
+  text-align: center;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  color: #3A86FF;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+
+.nav-item {
+  padding: 15px 20px;
+  color: #b0b0b0;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-item:hover,
+.nav-item.active {
+  background-color: #3A86FF;
+  color: #ffffff;
+}
+
+.main-content {
+  flex-grow: 1; /* <-- THIS IS THE CRITICAL LINE that makes it fill the space */
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden; /* Prevents horizontal overflow */
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.user-info {
+  font-weight: bold;
+}
+
+.logout-button {
+  background-color: #FF006E;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+
+}
+
+.logout-button:hover {
+  background-color: #d6005d;
+}
+
+.page-content {
+  padding: 30px;
+  overflow-y: auto;
+}

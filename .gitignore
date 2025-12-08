@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment Variables (Keep these secret!)
+.env
+*/.env
+
+# Build outputs
+dist/
+build/
+.DS_Store

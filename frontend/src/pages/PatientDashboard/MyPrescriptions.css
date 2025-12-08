@@ -1,0 +1,17 @@
+.my-prescriptions-container h2 {
+  color: #ffffff;
+  border-bottom: 2px solid #3A86FF;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+}
+
+.prescriptions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.my-prescriptions-container p {
+  color: #b0b0b0;
+  font-size: 1.1em;
+}

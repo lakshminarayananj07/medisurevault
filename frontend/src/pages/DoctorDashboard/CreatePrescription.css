@@ -1,0 +1,96 @@
+.create-prescription-container {
+  padding: 20px;
+}
+
+.create-prescription-container h2 {
+  color: #ffffff;
+  border-bottom: 2px solid #3A86FF;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+}
+
+.prescription-form .form-section {
+  background-color: #1e1e1e;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.static-info {
+  display: flex;
+  justify-content: space-between;
+  background-color: #2a2a2a !important;
+  color: #b0b0b0;
+  font-weight: bold;
+}
+
+.prescription-form .form-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #e0e0e0;
+}
+
+.prescription-form .input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #b0b0b0;
+}
+
+.prescription-form input[type="text"],
+.prescription-form input[type="number"],
+.prescription-form select {
+  width: 100%;
+  padding: 12px;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #e0e0e0;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.medicine-entry-advanced {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr) auto;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+/* Adjust grid columns based on type */
+.medicine-entry-advanced select[name="medicineId"] { grid-column: span 2; }
+.medicine-entry-advanced input[name="frequency"] { grid-column: span 1; }
+.medicine-entry-advanced input[name="instructions"] { grid-column: span 2; }
+
+
+.add-btn, .remove-btn, .submit-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.add-btn {
+  background-color: transparent;
+  color: #3A86FF;
+  border: 1px solid #3A86FF;
+}
+.add-btn:hover { background-color: #3A86FF; color: #ffffff; }
+
+.remove-btn {
+  background-color: #FF006E;
+  color: #ffffff;
+  padding: 12px;
+  line-height: 1;
+}
+.remove-btn:hover { background-color: #d6005d; }
+.remove-btn:disabled { background-color: #2a2a2a; color: #555; cursor: not-allowed; }
+
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  background-color: #2ECC71;
+  color: #ffffff;
+}
+.submit-btn:hover { background-color: #25a25a; }

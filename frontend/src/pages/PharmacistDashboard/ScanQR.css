@@ -1,0 +1,31 @@
+/* ... (keep existing styles) ... */
+
+.verification-container {
+  max-width: 600px;
+  margin: 20px auto;
+  text-align: left;
+}
+
+.verification-container h3 {
+  text-align: center;
+  color: #2ECC71; /* Green for success */
+  margin-bottom: 20px;
+}
+
+.dispense-button {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #2ECC71;
+  color: #ffffff;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+}
+
+.dispense-button:hover {
+  background-color: #25a25a;
+}

@@ -1,0 +1,37 @@
+.summary-card {
+  background-color: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.summary-title {
+  font-weight: bold;
+  color: #e0e0e0;
+  display: block;
+}
+
+.summary-meta {
+  font-size: 0.9em;
+  color: #b0b0b0;
+  margin-top: 5px;
+}
+
+.summary-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.summary-btn {
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.view-btn { background-color: #3A86FF; color: white; }
+.qr-btn { background-color: transparent; border: 1px solid #e0e0e0; color: #e0e0e0; }

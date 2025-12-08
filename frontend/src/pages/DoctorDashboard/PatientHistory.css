@@ -1,0 +1,50 @@
+.patient-history-container h2 {
+  color: #ffffff;
+  border-bottom: 2px solid #3A86FF;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+}
+
+.patient-selector-container {
+  background-color: #1e1e1e;
+  padding: 25px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.patient-selector-container label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #b0b0b0;
+}
+
+.patient-selector-container select {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #e0e0e0;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.history-results-container h3 {
+    color: #e0e0e0;
+    margin-bottom: 20px;
+}
+
+.history-results-container p {
+  color: #b0b0b0;
+  font-size: 1.1em;
+  text-align: center;
+  margin-top: 40px;
+}
+
+/* We can reuse the grid from the patient's page */
+.prescriptions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 20px;
+}
