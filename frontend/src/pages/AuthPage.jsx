@@ -18,16 +18,24 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  
+  // --- Doctor Specific ---
   const [hospitalName, setHospitalName] = useState('');
   const [specialization, setSpecialization] = useState('');
+  const [medicalRegNo, setMedicalRegNo] = useState('');
+  
+  // --- Pharmacist Specific ---
   const [pharmacyName, setPharmacyName] = useState('');
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [drugLicenseNumber, setDrugLicenseNumber] = useState('');
-  const [medicalRegNo, setMedicalRegNo] = useState('');
+  
+  // --- Patient Specific ---
   const [mobile, setMobile] = useState('');
   const [dob, setDob] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [aadhaar, setAadhaar] = useState('');
+  // NEW: State for the Patient Secret Code
+  const [patientCode, setPatientCode] = useState('');
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
@@ -55,7 +63,8 @@ const AuthPage = () => {
     let newUserData = { role, username, password, name };
 
     if (role === 'patient') {
-      newUserData = { ...newUserData, email, mobile, dob, bloodGroup, aadhaar };
+      // NEW: Include patientCode in the registration data
+      newUserData = { ...newUserData, email, mobile, dob, bloodGroup, aadhaar, patientCode };
     } else if (role === 'doctor') {
       newUserData = { ...newUserData, hospitalName, specialization, medicalRegNo };
     } else if (role === 'pharmacist') {
@@ -76,6 +85,19 @@ const AuthPage = () => {
           <>
             <div className="input-group"><label>Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
             <div className="input-group"><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+            
+            {/* NEW: Patient Code Input */}
+            <div className="input-group">
+                <label>Create Secret Code (Share with Doctor)</label>
+                <input 
+                    type="text" 
+                    value={patientCode} 
+                    onChange={(e) => setPatientCode(e.target.value)} 
+                    placeholder="e.g. MyCode@123"
+                    required 
+                />
+            </div>
+
             <div className="input-group"><label>Mobile Number</label><input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} required /></div>
             <div className="input-group"><label>Date of Birth</label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} required /></div>
             <div className="input-group"><label>Blood Group</label><input type="text" value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} required /></div>

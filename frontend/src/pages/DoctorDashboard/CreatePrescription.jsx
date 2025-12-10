@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../../hooks/useAppContext';
+import { getDoctorPatientsAPI } from '../../services/apiService'; // Import the API
 import './CreatePrescription.css';
 
 const CreatePrescription = () => {
-  const { currentUser, patients, medicinesDB, createPrescription, diagnoses } = useAppContext();
+  const { currentUser, medicinesDB, createPrescription, diagnoses } = useAppContext();
   
-  const [selectedPatient, setSelectedPatient] = useState('');
+  // --- SEARCH & PATIENT STATES ---
+  const [myPatients, setMyPatients] = useState([]);       // All linked patients
+  const [filteredPatients, setFilteredPatients] = useState([]); // Filtered by search
+  const [searchTerm, setSearchTerm] = useState('');       // Input text
+  const [selectedPatientId, setSelectedPatientId] = useState(''); // Selected ID
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef(null);
+
+  // --- FORM STATES ---
   const [diagnosis, setDiagnosis] = useState('');
   const [medicines, setMedicines] = useState([
     { medicineId: '', type: '', strength: '', quantity: '', volume: '', dosageInstruction: '', frequency: '', instructions: '' },
@@ -13,6 +22,57 @@ const CreatePrescription = () => {
 
   const today = new Date().toLocaleDateString('en-CA');
 
+  // 1. Fetch Doctor's Linked Patients on Load
+  useEffect(() => {
+    const fetchMyPatients = async () => {
+      const doctorId = currentUser?.id || currentUser?._id;
+      if (doctorId) {
+        const result = await getDoctorPatientsAPI(doctorId);
+        if (result.success) {
+          setMyPatients(result.data);
+          setFilteredPatients(result.data);
+        }
+      }
+    };
+    fetchMyPatients();
+  }, [currentUser]);
+
+  // 2. Click Outside Handler (Close Dropdown)
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // --- SEARCH LOGIC ---
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    setShowSuggestions(true);
+    setSelectedPatientId(''); // Clear selection if typing new stuff
+
+    if (term === '') {
+      setFilteredPatients(myPatients);
+    } else {
+      const filtered = myPatients.filter(patient => 
+        patient.name.toLowerCase().includes(term.toLowerCase()) || 
+        patient.username.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredPatients(filtered);
+    }
+  };
+
+  const selectPatient = (patient) => {
+    setSelectedPatientId(patient._id);
+    setSearchTerm(`${patient.name} (@${patient.username})`); // Show nice name
+    setShowSuggestions(false);
+  };
+
+  // --- MEDICINE HANDLERS (Unchanged) ---
   const handleMedicineChange = (index, event) => {
     const { name, value } = event.target;
     const list = [...medicines];
@@ -37,10 +97,17 @@ const CreatePrescription = () => {
     }
   };
 
+  // --- SUBMIT ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!selectedPatientId) {
+      alert("Please search and select a valid patient from the list.");
+      return;
+    }
+
     const prescriptionData = {
-      patientId: selectedPatient,
+      patientId: selectedPatientId, // Use the state from search
       date: today,
       diagnosis: diagnosis,
       medicines: medicines,
@@ -49,11 +116,14 @@ const CreatePrescription = () => {
     const result = await createPrescription(prescriptionData);
     
     if (result.success) {
-      alert('Prescription created successfully and saved to the database!');
-      // Reset form fields
-      setSelectedPatient('');
+      alert('Prescription created successfully!');
+      // Reset form
+      setSelectedPatientId('');
+      setSearchTerm('');
       setDiagnosis('');
       setMedicines([{ medicineId: '', type: '', strength: '', quantity: '', volume: '', dosageInstruction: '', frequency: '', instructions: '' }]);
+      // Reset search list
+      setFilteredPatients(myPatients);
     } else {
       alert(`Error: ${result.message}`);
     }
@@ -71,15 +141,42 @@ const CreatePrescription = () => {
 
         <div className="form-section">
           <h3>Patient Information</h3>
-          <div className="input-group">
+          
+          {/* --- NEW SEARCH BAR (Replaces Select) --- */}
+          <div className="input-group search-container" ref={searchRef}>
             <label>Select Patient</label>
-            <select value={selectedPatient} onChange={(e) => setSelectedPatient(e.target.value)} required>
-              <option value="" disabled>-- Select a Patient --</option>
-              {patients.map(p => (
-                <option key={p._id} value={p._id}>{p.name} ({p.username})</option>
-              ))}
-            </select>
+            <input 
+              type="text" 
+              placeholder="Type to search your patients..." 
+              value={searchTerm}
+              onChange={handleSearchChange}
+              onFocus={() => setShowSuggestions(true)}
+              className="search-input"
+              required // Validates that text is present
+            />
+            
+            {/* Suggestions Dropdown */}
+            {showSuggestions && (
+              <div className="suggestions-dropdown">
+                {filteredPatients.length > 0 ? (
+                  filteredPatients.map(patient => (
+                    <div 
+                      key={patient._id} 
+                      className="suggestion-row" 
+                      onClick={() => selectPatient(patient)}
+                    >
+                      <strong>{patient.name}</strong> 
+                      <span className="suggestion-username"> (@{patient.username})</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="no-suggestions">No patients found. Add them in History first.</div>
+                )}
+              </div>
+            )}
           </div>
+          {/* -------------------------------------- */}
+
           <div className="input-group">
             <label>Patient's Issue / Diagnosis</label>
             <select value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} required>
@@ -91,6 +188,7 @@ const CreatePrescription = () => {
           </div>
         </div>
 
+        {/* ... Medicines Section (Same as before) ... */}
         <div className="form-section">
           <h3>Medications</h3>
           {medicines.map((med, index) => (

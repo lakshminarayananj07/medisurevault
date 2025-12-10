@@ -62,7 +62,7 @@ export const getPrescriptionsAPI = async () => {
   }
 };
 
-
+// --- REMINDER SERVICES ---
 export const addReminderAPI = async (reminderData) => {
   try {
     const headers = getAuthHeaders();
@@ -90,5 +90,32 @@ export const deleteReminderAPI = async (id) => {
     return { success: true };
   } catch (error) {
     return { success: false, message: error.response.data.message || 'Error deleting reminder.' };
+  }
+};
+
+// --- NEW: DOCTOR PATIENT MANAGEMENT SERVICES ---
+
+// 1. Doctor adds a patient using username + code
+export const addPatientAPI = async (doctorId, patientUsername, patientCode) => {
+  try {
+    // Note: This goes to the auth route as we defined in backend
+    const response = await axios.post(`${API_URL}/auth/add-patient`, {
+      doctorId, 
+      patientUsername, 
+      patientCode
+    });
+    return { success: true, message: response.data.message, patientName: response.data.patientName };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || 'Error adding patient.' };
+  }
+};
+
+// 2. Fetch the list of patients associated with the doctor
+export const getDoctorPatientsAPI = async (doctorId) => {
+  try {
+    const response = await axios.get(`${API_URL}/auth/patient-history/${doctorId}`);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || 'Error fetching patient list.' };
   }
 };

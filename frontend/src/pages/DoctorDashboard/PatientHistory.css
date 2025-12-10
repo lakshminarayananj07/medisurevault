@@ -48,3 +48,188 @@
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 20px;
 }
+
+/* Add to PatientHistory.css */
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-patient-btn {
+  background-color: #2c3e50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.confirm-btn {
+  background-color: #27ae60;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #e74c3c;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.error-msg { color: red; font-size: 0.9em; margin-top: 5px; }
+.success-msg { color: green; font-size: 0.9em; margin-top: 5px; }
+
+/* ========================================= */
+/* UPDATED SEARCH & DROPDOWN (DARK THEME)    */
+/* ========================================= */
+
+.patient-selector-container {
+  position: relative;
+  margin-bottom: 25px;
+  max-width: 500px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* INPUT FIELD - Dark Theme */
+.patient-search-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #444; /* Dark Border */
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  
+  /* Dark Background & Light Text */
+  background-color: #2a2a2a !important; 
+  color: #e0e0e0 !important;
+}
+
+.patient-search-input:focus {
+  border-color: #3A86FF;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.2); /* Blue Glow */
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.clear-search-btn:hover {
+  color: #e0e0e0;
+}
+
+/* DROPDOWN CONTAINER - Dark Theme */
+.suggestions-list {
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  right: 0;
+  
+  /* Dark Background */
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  z-index: 10;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+/* INDIVIDUAL ITEMS */
+.suggestion-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #444; /* Dark Divider */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  /* Dark Background & Light Text */
+  background-color: #2a2a2a;
+  color: #e0e0e0 !important;
+  transition: background-color 0.2s;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+/* HOVER EFFECT - Brand Blue */
+.suggestion-item:hover {
+  background-color: #3A86FF; /* Blue Background */
+  color: #ffffff !important; /* White Text */
+}
+
+/* Name Text */
+.s-name {
+  font-weight: 600;
+  color: #ffffff !important; /* Bright White */
+}
+
+/* Username Text */
+.s-username {
+  font-size: 0.85rem;
+  color: #a0a0a0 !important; /* Dim Grey */
+}
+
+/* Ensure text turns white on hover */
+.suggestion-item:hover .s-name,
+.suggestion-item:hover .s-username {
+  color: #ffffff !important;
+}
+
+/* Empty State */
+.no-suggestion {
+  padding: 15px;
+  color: #888;
+  text-align: center;
+  font-style: italic;
+  background-color: #2a2a2a;
+}

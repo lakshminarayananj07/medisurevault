@@ -7,19 +7,26 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, unique: true, sparse: true }, // Unique but can be null
   
-  // Doctor-specific
+  // --- Doctor-specific ---
   hospitalName: { type: String },
   specialization: { type: String },
   medicalRegNo: { type: String },
+  // NEW: List of patients the doctor has explicitly added to their history
+  addedPatients: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }],
   
-  // Patient-specific
+  // --- Patient-specific ---
   mobile: { type: String },
   dob: { type: String },
   address: { type: String },
   bloodGroup: { type: String },
   aadhaar: { type: String },
+  // NEW: The unique secret code created by the patient for doctor verification
+  patientCode: { type: String },
 
-  // Pharmacist-specific
+  // --- Pharmacist-specific ---
   pharmacyName: { type: String },
   registrationNumber: { type: String },
   drugLicenseNumber: { type: String },

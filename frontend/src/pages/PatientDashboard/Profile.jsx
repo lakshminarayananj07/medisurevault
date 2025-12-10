@@ -10,6 +10,16 @@ const PatientProfile = () => {
       <h2>Patient Profile</h2>
       <div className="profile-card">
         <ul className="profile-details">
+          
+          {/* --- UPDATED: SECRET CODE ITEM (Now a normal item) --- */}
+          <li>
+            <span className="detail-label">My Secret Code</span>
+            <span className="detail-value">
+              {currentUser?.patientCode || "Not Set"}
+            </span>
+          </li>
+          {/* --------------------------------------------------- */}
+
           <li>
             <span className="detail-label">Name</span>
             <span className="detail-value">{currentUser?.name}</span>
@@ -30,7 +40,6 @@ const PatientProfile = () => {
             <span className="detail-label">Date of Birth</span>
             <span className="detail-value">{currentUser?.dob}</span>
           </li>
-          {/* The Address list item is now removed */}
           <li>
             <span className="detail-label">Blood Group</span>
             <span className="detail-value">{currentUser?.bloodGroup}</span>

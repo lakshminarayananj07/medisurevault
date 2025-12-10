@@ -94,3 +94,76 @@
   color: #ffffff;
 }
 .submit-btn:hover { background-color: #25a25a; }
+
+
+/* ========================================= */
+/* UPDATED SEARCH & DROPDOWN (DARK THEME)    */
+/* ========================================= */
+
+.search-container {
+  position: relative; 
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px;
+  /* Matches your other inputs */
+  background-color: #2a2a2a; 
+  border: 1px solid #444;
+  border-radius: 5px;
+  color: #e0e0e0; /* Light text */
+}
+
+/* The Dropdown Container */
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%; 
+  left: 0;
+  right: 0;
+  
+  /* DARK BACKGROUND (Matches Page/Inputs) */
+  background-color: #2a2a2a; 
+  border: 1px solid #444; /* Dark border */
+  
+  border-radius: 0 0 5px 5px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3); /* Darker shadow */
+}
+
+/* Individual Rows */
+.suggestion-row {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #444; /* Dark divider */
+  
+  /* DARK BACKGROUND & LIGHT TEXT */
+  background-color: #2a2a2a;
+  color: #e0e0e0 !important; 
+  transition: background-color 0.2s;
+}
+
+.suggestion-row strong {
+  color: #ffffff !important; /* Name is bright white */
+}
+
+.suggestion-username {
+  color: #a0a0a0 !important; /* Username is slightly dimmer */
+  font-size: 0.9em;
+}
+
+/* HOVER STATE - BLUE */
+.suggestion-row:hover {
+  background-color: #3A86FF; /* Your Brand Blue */
+  color: #ffffff !important; /* Text turns white on blue */
+}
+
+/* Empty State */
+.no-suggestions {
+  padding: 10px;
+  color: #888;
+  font-style: italic;
+  text-align: center;
+  background-color: #2a2a2a;
+}
