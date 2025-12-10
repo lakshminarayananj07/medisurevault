@@ -61,3 +61,34 @@ export const getPrescriptionsAPI = async () => {
     return { success: false, message: error.response.data.message || 'Error fetching prescriptions.' };
   }
 };
+
+
+export const addReminderAPI = async (reminderData) => {
+  try {
+    const headers = getAuthHeaders();
+    const response = await axios.post(`${API_URL}/reminders/add`, reminderData, { headers });
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, message: error.response.data.message || 'Error adding reminder.' };
+  }
+};
+
+export const getRemindersAPI = async () => {
+  try {
+    const headers = getAuthHeaders();
+    const response = await axios.get(`${API_URL}/reminders`, { headers });
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, message: error.response.data.message || 'Error fetching reminders.' };
+  }
+};
+
+export const deleteReminderAPI = async (id) => {
+  try {
+    const headers = getAuthHeaders();
+    await axios.delete(`${API_URL}/reminders/${id}`, { headers });
+    return { success: true };
+  } catch (error) {
+    return { success: false, message: error.response.data.message || 'Error deleting reminder.' };
+  }
+};

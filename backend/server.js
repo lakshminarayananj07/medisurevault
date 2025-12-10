@@ -13,9 +13,11 @@ app.use(express.json());
 const apiRoutes = require('./routes/api'); 
 const authRoutes = require('./routes/auth');
 const prescriptionRoutes = require('./routes/prescriptions');
+const reminderRoutes = require('./routes/reminders');
 app.use('/api', apiRoutes);               // <-- ADD THIS LINE
 app.use('/api/auth', authRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/reminders', reminderRoutes);
 
 app.get('/', (req, res) => {
   res.send('MediSure Vault Server is running!');

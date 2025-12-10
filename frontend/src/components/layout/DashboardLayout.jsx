@@ -14,6 +14,7 @@ const navLinks = {
   patient: [
     { name: 'Dashboard', path: '/patient-dashboard' },
     { name: 'My Prescriptions', path: '/patient-dashboard/prescriptions' },
+    { name: 'Reminders', path: '/patient-dashboard/reminders' },
     { name: 'AI Chatbot', path: '/patient-dashboard/chatbot' },
     { name: 'Profile', path: '/patient-dashboard/profile' },
   ],
