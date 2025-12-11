@@ -119,3 +119,42 @@ export const getDoctorPatientsAPI = async (doctorId) => {
     return { success: false, message: error.response?.data?.message || 'Error fetching patient list.' };
   }
 };
+
+// --- INVENTORY API (Pharmacist) ---
+
+export const getInventoryAPI = async (pharmacistId) => {
+  try {
+    // Assuming you set up this route in backend
+    const response = await axios.get(`${API_URL}/inventory/${pharmacistId}`);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || "Fetch failed" };
+  }
+};
+
+export const addInventoryItemAPI = async (itemData) => {
+  try {
+    const response = await axios.post(`${API_URL}/inventory/add`, itemData);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || "Add failed" };
+  }
+};
+
+export const updateInventoryItemAPI = async (id, itemData) => {
+  try {
+    const response = await axios.put(`${API_URL}/inventory/update/${id}`, itemData);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || "Update failed" };
+  }
+};
+
+export const deleteInventoryItemAPI = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/inventory/delete/${id}`);
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || "Delete failed" };
+  }
+};

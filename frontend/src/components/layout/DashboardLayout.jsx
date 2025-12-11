@@ -1,5 +1,6 @@
 import React from 'react';
-import { useNavigate, NavLink,Outlet } from 'react-router-dom';
+import { useNavigate, NavLink, Outlet } from 'react-router-dom';
+import { useAppContext } from '../../hooks/useAppContext';
 import './DashboardLayout.css';
 
 // Define the navigation links for each role
@@ -21,13 +22,17 @@ const navLinks = {
   pharmacist: [
     { name: 'Dashboard', path: '/pharmacist-dashboard' },
     { name: 'Scan QR Code', path: '/pharmacist-dashboard/scan' },
+    // --- ADDED INVENTORY LINK HERE ---
+    { name: 'Stock Management', path: '/pharmacist-dashboard/inventory' },
+    // ---------------------------------
     { name: 'Profile', path: '/pharmacist-dashboard/profile' },
   ],
 };
 
 const DashboardLayout = ({ children, role }) => {
   const navigate = useNavigate();
-  const links = navLinks[role] || []; // Get links for the current role
+  const { currentUser } = useAppContext();
+  const links = navLinks[role] || [];
 
   const handleLogout = () => {
     console.log('Logging out...');
@@ -46,7 +51,7 @@ const DashboardLayout = ({ children, role }) => {
               key={link.name}
               to={link.path}
               className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
-              end // Use 'end' for the main dashboard link to prevent it from always being active
+              end
             >
               {link.name}
             </NavLink>
@@ -56,7 +61,7 @@ const DashboardLayout = ({ children, role }) => {
       <main className="main-content">
         <header className="topbar">
           <div className="user-info">
-            <span>Welcome, [UserName]!</span>
+            <span>Welcome, {currentUser?.name || "User"}!</span> 
           </div>
           <button onClick={handleLogout} className="logout-button">
             Logout

@@ -3,13 +3,18 @@ const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./config/db');
 connectDB();
+// ... existing imports ...
+const inventoryRoutes = require('./routes/inventoryroutes'); // <--- IMPORT THIS
 
+
+// ... app.listen(...) ...
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
 // --- ROUTES ---
+app.use('/api/inventory', inventoryRoutes); 
 const apiRoutes = require('./routes/api'); 
 const authRoutes = require('./routes/auth');
 const prescriptionRoutes = require('./routes/prescriptions');

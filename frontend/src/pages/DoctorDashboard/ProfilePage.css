@@ -1,58 +1,282 @@
-.profile-container {
-  max-width: 800px;
-}
+/* =========================================
+   SHARED PROFILE THEME (Doctor, Patient, Pharmacist)
+   ========================================= */
 
-.profile-container h2 {
-  color: #ffffff;
-  border-bottom: 2px solid #3A86FF;
-  padding-bottom: 10px;
-  margin-bottom: 30px;
-}
-
-.profile-card {
-  background-color: #1e1e1e;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.profile-details {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.profile-details li {
+/* --- 1. PAGE LAYOUT --- */
+.profile-page {
+  width: 100%;
+  min-height: calc(100vh - 100px); /* Fill remaining height */
+  background-color: #f1f5f9; /* Light Slate Background */
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
   display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-radius: 16px; 
+  background-color: white;
+}
+
+/* --- 2. HEADER CARD (Top Section) --- */
+.profile-header-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  position: relative;
+}
+
+.profile-cover {
+  height: 140px;
+  background: linear-gradient(135deg, #0f172a 0%, #334155 100%); /* Midnight Blue Gradient */
+  width: 100%;
+}
+
+.profile-content {
+  padding: 0 30px 25px 30px;
+  display: flex;
+  align-items: flex-end; /* Align avatar bottom with text */
   justify-content: space-between;
-  padding: 15px 0;
-  border-bottom: 1px solid #2a2a2a;
+  margin-top: -60px; /* Pull content up over the cover */
+  position: relative;
 }
 
-.profile-details li:last-child {
-  border-bottom: none;
+/* Avatar Styling */
+.profile-avatar-wrapper {
+  position: relative;
 }
 
-.detail-label {
-  color: #b0b0b0;
-  font-weight: bold;
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  background-color: #fff;
+  border: 4px solid #fff;
+  border-radius: 50%; /* Circle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.5rem;
+  color: #cbd5e1; /* Gray icon color */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.detail-value {
-  color: #e0e0e0;
+.camera-btn {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: #3b82f6; /* Bright Blue */
+  color: white;
+  border: 3px solid #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: transform 0.2s;
 }
 
-.profile-actions {
+.camera-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Identity Text */
+.profile-identity {
+  flex: 1;
+  margin-left: 24px;
+  margin-bottom: 5px; /* Adjust vertical alignment */
+}
+
+.profile-identity h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.role-badge {
+  background-color: #f1f5f9;
+  color: #64748b;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-right: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.sub-identity {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+/* Edit Button */
+.edit-profile-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.edit-profile-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+/* --- 3. DETAILS CARD (Bottom Section) --- */
+.profile-details-card {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  flex: 1; /* Stretch to fill space */
+}
+
+.card-header-row {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 15px;
+  margin-bottom: 25px;
+}
+
+.profile-details-card h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Grid Layout */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-group.full-width {
+  grid-column: 1 / -1; /* Spans entire row */
+}
+
+/* Labels & Values */
+.info-group label {
+  font-size: 0.85rem;
+  color: #64748b; /* Slate Gray */
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-group label svg {
+  color: #3b82f6; /* Blue icons */
+}
+
+.info-value {
+  font-size: 1rem;
+  color: #334155;
+  padding: 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 500;
+  min-height: 24px; /* Ensure height even if empty */
+}
+
+/* Special Styles */
+.highlight-text {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border-color: #dbeafe;
+  font-weight: 600;
+}
+
+/* Editable State Style */
+.info-value.editable {
+  background-color: #fff;
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.1);
+  cursor: text;
+}
+
+/* --- 4. ACTION BUTTONS --- */
+.edit-actions {
   margin-top: 30px;
   text-align: right;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 20px;
 }
 
-.edit-button {
-  background-color: #3A86FF;
+.save-btn {
+  background-color: #0f172a; /* Midnight Blue */
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  font-weight: bold;
+  transition: background 0.2s;
+  box-shadow: 0 4px 6px rgba(15, 23, 42, 0.2);
+}
+
+.save-btn:hover {
+  background-color: #1e293b;
+  transform: translateY(-1px);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #64748b;
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+  .profile-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: -60px;
+  }
+
+  .profile-identity {
+    margin-left: 0;
+    margin-top: 15px;
+    margin-bottom: 20px;
+  }
+
+  .sub-identity {
+    justify-content: center;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr; /* Stack inputs vertically */
+  }
 }

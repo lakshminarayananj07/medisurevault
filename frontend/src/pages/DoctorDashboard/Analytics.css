@@ -1,21 +1,73 @@
-.analytics-container h2 {
-  color: #ffffff;
-  border-bottom: 2px solid #3A86FF;
-  padding-bottom: 10px;
+/* =========================================
+   Analytics - LIGHT THEME
+   (Curved Borders & Clean Layout)
+   ========================================= */
+
+.analytics-container {
+  width: 100%;
+  min-height: calc(100vh - 80px);
+  background-color: #f1f5f9; /* Light Slate BG */
+  padding: 30px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  font-family: 'Inter', sans-serif;
+  color: #334155;
+}
+
+/* Header */
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 15px;
   margin-bottom: 30px;
 }
 
+.analytics-container h2 {
+  font-size: 1.8rem;
+  color: #0f172a; /* Midnight Blue */
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+/* Live Indicator */
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #10b981; /* Green */
+  font-weight: 700;
+  background: #ecfdf5;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #d1fae5;
+}
+
+.spin-icon {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* Grid Layout */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* A 2x2 grid */
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
   gap: 30px;
 }
 
+/* Chart Cards */
 .chart-card {
-  background-color: #1e1e1e;
+  background-color: #ffffff; /* White Card */
   padding: 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  border-radius: 16px; /* Curved Borders */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Soft Shadow */
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
@@ -23,30 +75,70 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  min-height: 40px;
 }
 
 .chart-card h3 {
   margin: 0;
-  color: #e0e0e0;
+  color: #1e293b; /* Slate Dark */
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Chart Canvas Wrapper (Controls Height) */
+.chart-wrapper {
+  position: relative;
+  height: 250px; /* Enforce height */
+  width: 100%;
+}
+
+.doughnut-wrapper, .pie-wrapper {
+  padding: 10px;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Time Toggles */
+.time-toggle {
+  background-color: #f1f5f9;
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  gap: 4px;
 }
 
 .time-toggle button {
-  background-color: #2a2a2a;
-  border: 1px solid #444;
-  color: #b0b0b0;
-  padding: 5px 10px;
-  margin-left: 5px;
-  border-radius: 5px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  padding: 6px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .time-toggle button:hover {
-  background-color: #333;
+  color: #0f172a;
+  background-color: #e2e8f0;
 }
 
 .time-toggle button.active {
-  background-color: #3A86FF;
-  color: #ffffff;
-  border-color: #3A86FF;
+  background-color: #ffffff;
+  color: #3b82f6; /* Blue Text */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }

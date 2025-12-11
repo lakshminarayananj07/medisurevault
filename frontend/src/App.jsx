@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import Inventory from './pages/PharmacistDashboard/Inventory';
 
 // ▼▼▼ IMPORT THE POPUP ▼▼▼
 import ReminderPopup from './components/specific/ReminderPopup';
@@ -61,6 +62,7 @@ function App() {
         <Route path="/pharmacist-dashboard" element={<DashboardLayout role="pharmacist" />}>
           <Route index element={<PharmacistDashboard />} />
           <Route path="scan" element={<ScanQR />} />
+          <Route path="inventory" element={<Inventory />} />
           <Route path="profile" element={<PharmacistProfile />} />
         </Route>
       </Routes>

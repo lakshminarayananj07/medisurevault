@@ -1,17 +1,130 @@
-.my-prescriptions-container h2 {
-  color: #ffffff;
-  border-bottom: 2px solid #3A86FF;
-  padding-bottom: 10px;
-  margin-bottom: 30px;
+/* --- FULL HEIGHT PAGE LAYOUT --- */
+.full-height-page {
+  width: 100%;
+  height: calc(100vh - 80px); /* Fill screen minus topbar */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0 20px 20px 20px;
 }
 
-.prescriptions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 20px;
+/* Ensure the content wrapper grows */
+.grow-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Crucial for nested flex scrolling */
 }
 
-.my-prescriptions-container p {
-  color: #b0b0b0;
-  font-size: 1.1em;
+/* Ensure the white panel grows */
+.full-height-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  margin-bottom: 0 !important;
+  border: 1px solid #e2e8f0;
+  overflow: hidden; /* Contains the scroll */
 }
+
+/* Ensure table container fills the panel */
+.fill-space {
+  flex: 1;
+  overflow-y: auto; /* Scrollbar appears here */
+  width: 100%;
+}
+
+/* --- TABLE STYLING --- */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.modern-table th {
+  text-align: left;
+  padding: 16px;
+  background: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky; /* Keeps header visible */
+  top: 0;
+  z-index: 10;
+}
+
+.modern-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.doctor-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* Action Buttons */
+.action-buttons-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.icon-btn-view {
+  background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.8rem;
+}
+.icon-btn-view:hover { background: #dbeafe; }
+
+.icon-btn-qr {
+  background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.8rem;
+}
+.icon-btn-qr:hover { background: #dcfce7; }
+
+.text-disabled { color: #94a3b8; font-size: 0.8rem; font-style: italic; }
+
+/* Status Badges */
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; }
+.badge.success { background: #dcfce7; color: #166534; }
+.badge.error { background: #fee2e2; color: #991b1b; }
+
+/* --- MODAL CSS (Keep existing Modal CSS below) --- */
+/* (Copy the .modal-overlay, .rx-paper-look, etc. from your previous message here) */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000; backdrop-filter: blur(2px);
+}
+.rx-paper-look {
+  background: #ffffff; color: #1a1a1a; width: 90%; max-width: 750px;
+  max-height: 90vh; overflow-y: auto; border-radius: 4px; padding: 40px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: 'Georgia', serif;
+}
+.modal-header { display: flex; justify-content: space-between; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+.rx-logo h2 { margin: 0; font-family: 'Arial', sans-serif; font-size: 1.8rem; }
+.rx-logo h2 span { color: #3b82f6; }
+.close-btn { background: none; border: none; font-size: 2rem; cursor: pointer; }
+.rx-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; font-family: 'Arial', sans-serif; text-align: center; }
+.rx-info-group { display: flex; flex-direction: column; align-items: center; }
+.rx-info-group label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+.full-row { grid-column: 1 / -1; margin-top: 10px; }
+.diagnosis-highlight { background: #f0f4f8; padding: 6px 16px; border-radius: 4px; font-weight: 600; border: 1px solid #dae1e7; }
+.rx-divider { border: 0; border-top: 1px dashed #999; margin: 30px 0; }
+.rx-section-title { text-align: center; font-weight: bold; margin-bottom: 20px; }
+.rx-med-table { width: 100%; border-collapse: collapse; }
+.rx-med-table th { border-bottom: 2px solid #000; padding: 10px; text-align: left; }
+.rx-med-table td { padding: 15px 10px; border-bottom: 1px solid #ddd; }
+.modal-footer { display: flex; justify-content: space-between; margin-top: 40px; border-top: 2px solid #000; padding-top: 20px; }
+.print-btn { background: #0f172a; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
