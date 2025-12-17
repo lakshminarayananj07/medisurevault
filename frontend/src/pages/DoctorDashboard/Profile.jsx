@@ -1,123 +1,347 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../hooks/useAppContext';
-import './ProfilePage.css'; // Shared CSS
 import { 
   FaUserMd, FaEnvelope, FaPhone, FaHospital, 
-  FaStethoscope, FaFileMedical, FaEdit, FaCamera, FaMapMarkerAlt 
+  FaStethoscope, FaFileMedical, FaEdit, FaCamera, 
+  FaMapMarkerAlt, FaSave, FaTimes, FaGraduationCap 
 } from 'react-icons/fa';
 
 const DoctorProfile = () => {
   const { currentUser } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
+  
+  const [formData, setFormData] = useState({});
 
-  // Safety check
-  if (!currentUser) return <div className="loading-state">Loading Profile...</div>;
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || '',
+        specialization: currentUser.specialization || '',
+        medicalRegNo: currentUser.medicalRegNo || '',
+        hospitalName: currentUser.hospitalName || currentUser.hospital || '',
+        address: currentUser.address || '',
+        qualification: currentUser.qualification || 'MBBS, MD'
+      });
+    }
+  }, [currentUser]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSave = () => {
+    console.log("Saving Profile:", formData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    if (currentUser) {
+        setFormData({
+            name: currentUser.name || '',
+            email: currentUser.email || '',
+            phone: currentUser.phone || '',
+            specialization: currentUser.specialization || '',
+            medicalRegNo: currentUser.medicalRegNo || '',
+            hospitalName: currentUser.hospitalName || currentUser.hospital || '',
+            address: currentUser.address || '',
+            qualification: currentUser.qualification || 'MBBS, MD'
+        });
+    }
+    setIsEditing(false);
+  };
+
+  // --- STYLES (MATCHING OTHER PAGES) ---
+  const styles = {
+    pageContainer: {
+        minHeight: '100vh',
+        width: '99%',
+        maxWidth: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+        fontFamily: "'Poppins', sans-serif",
+        gap: '20px'
+    },
+    // HEADER SECTION
+    topRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '98%',
+        backgroundColor: '#ffffff', 
+        padding: '20px',            
+        borderRadius: '20px', 
+    },
+    headerContent: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '20px',
+    },
+    // Avatar in Header
+    avatarContainer: {
+        position: 'relative',
+        width: '80px',
+        height: '80px',
+    },
+    avatar: {
+        width: '100%',
+        height: '100%',
+        borderRadius: '50%',
+        backgroundColor: '#e0e7ff', 
+        color: '#4338ca', 
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '35px',
+        border: '3px solid #f1f5f9'
+    },
+    cameraBtn: {
+        position: 'absolute',
+        bottom: '0',
+        right: '0',
+        backgroundColor: '#0f172a',
+        color: 'white',
+        border: 'none',
+        width: '24px',
+        height: '24px',
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        fontSize: '10px'
+    },
+    headerText: {
+        display: 'flex',
+        flexDirection: 'column',
+    },
+    headerTitle: {
+        margin: 0,
+        fontSize: '26px',
+        fontWeight: '700',
+        color: '#1e293b',
+    },
+    headerSubtitle: {
+        margin: '5px 0 0 0',
+        fontSize: '14px',
+        color: '#64748b',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px'
+    },
+    badge: {
+        backgroundColor: '#f1f5f9',
+        padding: '4px 10px',
+        borderRadius: '6px',
+        fontSize: '12px',
+        fontWeight: '600',
+        color: '#475569',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px'
+    },
+
+    // ACTIONS (Edit/Save)
+    actionGroup: {
+        display: 'flex',
+        gap: '10px'
+    },
+    editBtn: {
+        backgroundColor: '#0f172a',
+        color: '#ffffff',
+        border: 'none',
+        padding: '12px 24px',
+        borderRadius: '10px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        transition: 'all 0.2s',
+    },
+    cancelBtn: {
+        backgroundColor: '#fee2e2',
+        color: '#ef4444',
+        border: 'none',
+        padding: '12px 24px',
+        borderRadius: '10px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+    },
+    saveBtn: {
+        backgroundColor: '#dcfce7',
+        color: '#166534',
+        border: 'none',
+        padding: '12px 24px',
+        borderRadius: '10px',
+        fontSize: '14px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+    },
+
+    // CONTENT PANEL
+    contentPanel: {
+        backgroundColor: '#ffffff',
+        borderRadius: '20px',
+        border: '1px solid #e2e8f0',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        width: '101%',
+        padding: '40px',
+        boxSizing: 'border-box'
+    },
+
+    // FORM GRID
+    grid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gap: '30px',
+    },
+    fieldGroup: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px'
+    },
+    label: {
+        fontSize: '13px',
+        fontWeight: '600',
+        color: '#64748b',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em'
+    },
+    input: {
+        padding: '14px 16px',
+        borderRadius: '10px',
+        border: '1px solid #cbd5e1',
+        fontSize: '15px',
+        fontFamily: 'inherit',
+        color: '#1e293b',
+        outline: 'none',
+        transition: 'border-color 0.2s',
+        width: '100%',
+        boxSizing: 'border-box',
+        backgroundColor: '#ffffff'
+    },
+    readOnlyBox: {
+        padding: '14px 16px',
+        backgroundColor: '#f8fafc',
+        borderRadius: '10px',
+        border: '1px solid #e2e8f0',
+        color: '#334155',
+        fontSize: '15px',
+        fontWeight: '500',
+    },
+    fullWidth: {
+        gridColumn: '1 / -1'
+    }
+  };
+
+  // Helper to render fields
+  const renderField = (label, name, icon, isFullWidth = false) => (
+    <div style={{...styles.fieldGroup, ...(isFullWidth ? styles.fullWidth : {})}}>
+      <label style={styles.label}>{icon} {label}</label>
+      {isEditing ? (
+        <input 
+          type="text" 
+          name={name}
+          value={formData[name]} 
+          onChange={handleInputChange} 
+          style={{...styles.input, borderColor: '#6366f1'}}
+        />
+      ) : (
+        <div style={styles.readOnlyBox}>
+          {formData[name] || "Not Provided"}
+        </div>
+      )}
+    </div>
+  );
+
+  if (!currentUser) return <div style={{padding:'40px', textAlign:'center', fontFamily: "'Poppins', sans-serif"}}>Loading Profile...</div>;
 
   return (
-    // FIX 1: Fixed page height to prevent full window scroll
-    <div className="profile-page" style={{ 
-      height: 'calc(100vh - 60px)', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      overflow: 'hidden',
-      paddingBottom: '20px' 
-    }}>
-      
-      {/* --- 1. HEADER CARD (Cover Removed) --- */}
-      <div className="profile-header-card">
+    <>
+        <style>
+            {`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');`}
+        </style>
+
+        <div style={styles.pageContainer}>
         
-        {/* FIX 2: Added marginTop: 0 to sit correctly without the cover */}
-        <div className="profile-content" style={{ marginTop: 0, paddingTop: '30px' }}>
-          
-          <div className="profile-avatar-wrapper">
-            <div className="profile-avatar">
-              <FaUserMd />
-            </div>
-            <button className="camera-btn"><FaCamera /></button>
-          </div>
+        {/* --- HEADER SECTION --- */}
+        <div style={styles.topRow}>
+            <div style={styles.headerContent}>
+                {/* Profile Image */}
+                <div style={styles.avatarContainer}>
+                    <div style={styles.avatar}><FaUserMd /></div>
+                    <button style={styles.cameraBtn}><FaCamera /></button>
+                </div>
 
-          <div className="profile-identity">
-            <h1>Dr. {currentUser.name}</h1>
-            <span className="role-badge">DOCTOR</span>
-            <div className="sub-identity">
-              <FaHospital style={{ marginRight: '6px' }}/> {currentUser.hospitalName || "General Hospital"}
+                {/* Details */}
+                <div style={styles.headerText}>
+                    <h1 style={styles.headerTitle}>Dr. {formData.name}</h1>
+                    <div style={styles.headerSubtitle}>
+                        <span style={styles.badge}><FaStethoscope /> {formData.specialization || "General"}</span>
+                        <span style={styles.badge}><FaHospital /> {formData.hospitalName || "General Hospital"}</span>
+                    </div>
+                </div>
             </div>
-          </div>
 
-          <button className="edit-profile-btn" onClick={() => setIsEditing(!isEditing)}>
-            <FaEdit /> {isEditing ? 'Cancel' : 'Edit Profile'}
-          </button>
-        </div>
-      </div>
-
-      {/* --- 2. DETAILS CARD (Scrollable) --- */}
-      <div className="profile-details-card" style={{ 
-        flex: 1, 
-        overflowY: 'auto', // Allows scrolling ONLY inside this card
-        marginTop: '20px' 
-      }}>
-        <div className="card-header-row">
-          <h2>Professional Details</h2>
-        </div>
-        
-        <div className="info-grid">
-          
-          {/* Contact Info */}
-          <div className="info-group">
-            <label><FaEnvelope /> Email Address</label>
-            <div className={isEditing ? "info-value editable" : "info-value"}>
-              {currentUser.email || "N/A"}
+            {/* Actions */}
+            <div style={styles.actionGroup}>
+                {!isEditing ? (
+                    <button style={styles.editBtn} onClick={() => setIsEditing(true)}>
+                        <FaEdit /> Edit Profile
+                    </button>
+                ) : (
+                    <>
+                        <button style={styles.cancelBtn} onClick={handleCancel}>
+                            <FaTimes /> Cancel
+                        </button>
+                        <button style={styles.saveBtn} onClick={handleSave}>
+                            <FaSave /> Save Changes
+                        </button>
+                    </>
+                )}
             </div>
-          </div>
-
-          <div className="info-group">
-            <label><FaPhone /> Phone Number</label>
-            <div className={isEditing ? "info-value editable" : "info-value"}>
-              {currentUser.phone || "+91 98765 43210"}
-            </div>
-          </div>
-
-          {/* Professional Info */}
-          <div className="info-group">
-            <label><FaStethoscope /> Specialization</label>
-            <div className="info-value highlight-text">
-              {currentUser.specialization || "General Medicine"}
-            </div>
-          </div>
-
-          <div className="info-group">
-            <label><FaFileMedical /> Medical Reg. No</label>
-            <div className="info-value">
-              {currentUser.medicalRegNo || "N/A"}
-            </div>
-          </div>
-
-          {/* Full Width Field */}
-          <div className="info-group full-width">
-            <label><FaHospital /> Hospital Affiliation</label>
-            <div className="info-value">
-              {currentUser.hospitalName || currentUser.hospital || "Not Assigned"}
-            </div>
-          </div>
-          
-           <div className="info-group full-width">
-            <label><FaMapMarkerAlt /> Clinic Address</label>
-            <div className={isEditing ? "info-value editable" : "info-value"}>
-              {currentUser.address || "Chennai, Tamil Nadu, India"}
-            </div>
-          </div>
-
         </div>
 
-        {/* Save Button */}
-        {isEditing && (
-          <div className="edit-actions">
-            <button className="save-btn">Save Changes</button>
-          </div>
-        )}
-      </div>
+        {/* --- CONTENT PANEL --- */}
+        <div style={styles.contentPanel}>
+            <h2 style={{marginTop:0, marginBottom:'30px', fontSize:'20px', color:'#1e293b', borderBottom:'1px solid #e2e8f0', paddingBottom:'15px'}}>
+                Personal & Professional Information
+            </h2>
+            
+            <div style={styles.grid}>
+                {/* Contact Info */}
+                {renderField('Email Address', 'email', <FaEnvelope />)}
+                {renderField('Phone Number', 'phone', <FaPhone />)}
+                
+                {/* Professional Info */}
+                {renderField('Medical Registration No', 'medicalRegNo', <FaFileMedical />)}
+                {renderField('Qualifications', 'qualification', <FaGraduationCap />)}
 
-    </div>
+                {/* Full Width Info */}
+                {renderField('Clinic / Hospital Address', 'address', <FaMapMarkerAlt />, true)}
+            </div>
+        </div>
+
+        </div>
+    </>
   );
 };
 

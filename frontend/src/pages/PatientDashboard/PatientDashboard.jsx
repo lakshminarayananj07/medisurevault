@@ -6,8 +6,7 @@ import {
   FaFilePrescription, 
   FaPills, 
   FaCalendarCheck, 
-  FaInfoCircle,
-  FaRobot // Added for the chatbot tip
+  FaInfoCircle
 } from 'react-icons/fa'; 
 import './PatientDashboard.css'; 
 
@@ -15,14 +14,21 @@ const PatientDashboard = () => {
   const { currentUser, prescriptions } = useAppContext();
   const navigate = useNavigate();
 
-  // --- LOGIC ---
-  const myPrescriptions = prescriptions.filter(p => 
-    String(p.patientId) === String(currentUser.id || currentUser._id)
+  // --- SAFE DATA HANDLING ---
+  // 1. Check if it is an array. If not, default to empty array [].
+  const safePrescriptions = Array.isArray(prescriptions) ? prescriptions : [];
+
+  // 2. Now filter the safe array
+  const myPrescriptions = safePrescriptions.filter(p => 
+      String(p.patientId) === String(currentUser.id || currentUser._id)
   );
 
   const recentPrescriptions = myPrescriptions.slice(-3).reverse();
   const totalPrescriptions = myPrescriptions.length;
-  const activeMedications = myPrescriptions.length > 0 ? myPrescriptions[0].medicines.length : 0; 
+  // Safety check for medicines array
+  const activeMedications = myPrescriptions.length > 0 && myPrescriptions[0].medicines 
+    ? myPrescriptions[0].medicines.length 
+    : 0; 
   
   const todayDisplay = new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -117,7 +123,8 @@ const PatientDashboard = () => {
                   recentPrescriptions.map((p, index) => (
                     <tr key={p.id || index} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '16px', color: '#334155', fontWeight: 'bold' }}>
-                        Dr. {p.doctorName || "Unknown"}
+                        {/* --- THE FIX IS HERE --- */}
+                        Dr. {p.doctorId?.name || p.doctorName || "Unknown"}
                       </td>
                       <td style={{ padding: '16px', color: '#334155' }}>{p.diagnosis}</td>
                       <td style={{ padding: '16px', color: '#64748b' }}>{p.date}</td>

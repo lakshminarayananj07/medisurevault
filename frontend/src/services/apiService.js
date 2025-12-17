@@ -158,3 +158,14 @@ export const deleteInventoryItemAPI = async (id) => {
     return { success: false, message: error.response?.data?.message || "Delete failed" };
   }
 };
+
+// Add this to your services/apiService.js
+export const getPatientDoctorsAPI = async (id) => {
+  // Replace with your actual backend endpoint
+  try {
+    const response = await fetch(`${API_URL}/patients/${id}/doctors`);
+    return await response.json(); 
+  } catch (error) {
+    return { success: false, message: error.response?.data?.message || "Data fetching failed" };
+  }
+};

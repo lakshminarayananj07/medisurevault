@@ -11,8 +11,7 @@ import {
   Title 
 } from 'chart.js';
 import { Pie, Bar, Doughnut } from 'react-chartjs-2';
-import './Analytics.css';
-import { FaChartLine, FaSyncAlt } from 'react-icons/fa';
+import { FaChartLine, FaSyncAlt, FaCalendarAlt } from 'react-icons/fa';
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
@@ -34,8 +33,6 @@ const Analytics = () => {
     // Helper: Filter by Timeframe
     const filterByTime = (data, timeframe) => {
       const now = new Date();
-      // Reset hours to ensure accurate day comparison
-      
       if (timeframe === 'day') {
         return data.filter(p => {
           const pDate = new Date(p.date);
@@ -58,6 +55,8 @@ const Analytics = () => {
     // --- Chart 1: Volume Data ---
     const getVolumeData = () => {
       const data = filterByTime(doctorPrescriptions, volumeTimeframe);
+      // Grouping by date for better visualization if needed, currently total count
+      // For a simple bar of "Total", we keep it simple. 
       return {
         labels: ['Total Prescriptions'],
         datasets: [{ 
@@ -76,7 +75,6 @@ const Analytics = () => {
       let newCount = 0;
       let returningCount = 0;
       
-      // Sort by date to determine "First Time" vs "Returning" accurately
       const sorted = [...doctorPrescriptions].sort((a, b) => new Date(a.date) - new Date(b.date));
 
       sorted.forEach(p => {
@@ -92,7 +90,7 @@ const Analytics = () => {
         labels: ['New Patients', 'Returning Patients'],
         datasets: [{ 
           data: [newCount, returningCount], 
-          backgroundColor: ['#3b82f6', '#0ea5e9'], // Blue & Sky Blue
+          backgroundColor: ['#3b82f6', '#bae6fd'], // Bright Blue & Light Blue
           borderColor: '#ffffff',
           borderWidth: 2
         }]
@@ -106,13 +104,11 @@ const Analytics = () => {
       doctorPrescriptions.forEach(p => {
         if(p.medicines) {
           p.medicines.forEach(med => {
-            // Try to find name in DB, fallback to ID if not found
             let medName = 'Unknown';
             if (medicinesDB.length > 0) {
                 const found = medicinesDB.find(m => m.id === med.medicineId);
                 if (found) medName = found.name;
             }
-            // If still unknown, maybe the ID itself is the name in old data
             if (medName === 'Unknown' && med.medicineId) medName = med.medicineId;
 
             medCounts[medName] = (medCounts[medName] || 0) + 1;
@@ -128,7 +124,7 @@ const Analytics = () => {
         labels: sortedMeds.map(([name]) => name),
         datasets: [{ 
           data: sortedMeds.map(([, count]) => count), 
-          backgroundColor: ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8'], // Slate Gradients
+          backgroundColor: ['#0f172a', '#334155', '#475569', '#64748b', '#94a3b8'], 
           borderColor: '#ffffff',
           borderWidth: 2
         }]
@@ -152,7 +148,7 @@ const Analytics = () => {
         datasets: [{ 
           label: 'Cases', 
           data: sortedIssues.map(([, count]) => count), 
-          backgroundColor: '#3b82f6', // Bright Blue
+          backgroundColor: '#3b82f6', 
           borderRadius: 6
         }]
       };
@@ -161,13 +157,13 @@ const Analytics = () => {
     return { getVolumeData, getPatientStatusData, getTopMedicationsData, getTopIssuesData };
   }, [currentUser, prescriptions, medicinesDB, volumeTimeframe, issuesTimeframe]);
 
-  // --- Chart Configuration (Theme) ---
+  // --- Chart Configuration ---
   const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        labels: { color: '#334155', font: { family: 'Inter', size: 12 } }
+        labels: { color: '#334155', font: { family: "'Poppins', sans-serif", size: 12 } }
       }
     }
   };
@@ -177,11 +173,11 @@ const Analytics = () => {
     scales: {
       x: { 
         grid: { color: '#f1f5f9' }, 
-        ticks: { color: '#64748b' } 
+        ticks: { color: '#64748b', font: { family: "'Poppins', sans-serif" } } 
       },
       y: { 
         grid: { color: '#f1f5f9' }, 
-        ticks: { color: '#64748b', precision: 0 } 
+        ticks: { color: '#64748b', precision: 0, font: { family: "'Poppins', sans-serif" } } 
       }
     }
   };
@@ -192,71 +188,242 @@ const Analytics = () => {
     plugins: { legend: { display: false } }
   };
 
-  if (!processedData) return <div className="loading-state">Loading Analytics...</div>;
+  // --- STYLES ---
+  const styles = {
+    pageContainer: {
+        minHeight: '100vh',
+        width: '99%',
+        maxWidth: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
+        fontFamily: "'Poppins', sans-serif",
+        gap: '20px'
+    },
+    // Header
+    topRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '98%',
+        backgroundColor: '#ffffff', 
+        padding: '20px',            
+        borderRadius: '20px', 
+    },
+    headerContent: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px',
+    },
+    headerIcon: {
+        backgroundColor: '#e0e7ff', 
+        color: '#4338ca', 
+        padding: '12px',
+        borderRadius: '12px',
+        fontSize: '24px',
+        display: 'flex',
+    },
+    headerTitle: {
+        margin: 0,
+        fontSize: '26px',
+        fontWeight: '700',
+        color: '#1e293b',
+    },
+    headerSubtitle: {
+        margin: 0,
+        fontSize: '14px',
+        color: '#64748b',
+    },
+    liveIndicator: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        backgroundColor: '#ecfdf5',
+        color: '#059669',
+        padding: '8px 16px',
+        borderRadius: '20px',
+        fontSize: '13px',
+        fontWeight: '600',
+        border: '1px solid #d1fae5'
+    },
+    spinIcon: {
+        animation: 'spin 2s linear infinite'
+    },
+
+    // Grid Layout
+    chartsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', // Responsive grid
+        gap: '20px',
+        width: '101%',
+    },
+    
+    // Cards
+    chartCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: '20px',
+        border: '1px solid #e2e8f0',
+        padding: '25px',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '400px',
+        boxSizing: 'border-box'
+    },
+    cardHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px',
+        borderBottom: '1px solid #f1f5f9',
+        paddingBottom: '15px'
+    },
+    cardTitle: {
+        margin: 0,
+        fontSize: '18px',
+        fontWeight: '600',
+        color: '#1e293b'
+    },
+    
+    // Toggle Buttons
+    toggleContainer: {
+        display: 'flex',
+        backgroundColor: '#f1f5f9',
+        borderRadius: '8px',
+        padding: '4px'
+    },
+    toggleBtn: {
+        border: 'none',
+        background: 'transparent',
+        padding: '6px 12px',
+        fontSize: '12px',
+        fontWeight: '500',
+        color: '#64748b',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        transition: 'all 0.2s'
+    },
+    activeBtn: {
+        backgroundColor: '#ffffff',
+        color: '#0f172a',
+        fontWeight: '600',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+    },
+
+    // Chart Canvas Wrapper
+    chartWrapper: {
+        position: 'relative',
+        height: '300px',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center'
+    },
+    loadingState: {
+        display: 'flex', 
+        justifyContent:'center', 
+        alignItems:'center', 
+        height:'50vh', 
+        color:'#64748b', 
+        fontFamily:"'Poppins', sans-serif"
+    }
+  };
+
+  if (!processedData) return <div style={styles.loadingState}>Loading Analytics...</div>;
 
   return (
-    <div className="analytics-container">
-      <div className="analytics-header">
-        <h2><FaChartLine style={{marginRight:'10px'}}/> Practice Analytics</h2>
-        <div className="live-indicator">
-            <FaSyncAlt className="spin-icon" /> Live Data
-        </div>
-      </div>
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+        `}
+      </style>
 
-      <div className="charts-grid">
+      <div style={styles.pageContainer}>
         
-        {/* Chart 1: Volume */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3>Prescription Volume</h3>
-            <div className="time-toggle">
-              <button onClick={() => setVolumeTimeframe('day')} className={volumeTimeframe === 'day' ? 'active' : ''}>Day</button>
-              <button onClick={() => setVolumeTimeframe('week')} className={volumeTimeframe === 'week' ? 'active' : ''}>Week</button>
-              <button onClick={() => setVolumeTimeframe('year')} className={volumeTimeframe === 'year' ? 'active' : ''}>Year</button>
+        {/* --- HEADER --- */}
+        <div style={styles.topRow}>
+          <div style={styles.headerContent}>
+            <div style={styles.headerIcon}><FaChartLine /></div>
+            <div>
+              <h1 style={styles.headerTitle}>Practice Analytics</h1>
+              <p style={styles.headerSubtitle}>Real-time insights and statistics</p>
             </div>
           </div>
-          <div className="chart-wrapper">
-            <Bar data={processedData.getVolumeData()} options={axisOptions} />
+          <div style={styles.liveIndicator}>
+            <FaSyncAlt style={styles.spinIcon} /> Live Data Sync
           </div>
         </div>
 
-        {/* Chart 2: New vs Returning */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3>Patient Demographics</h3>
-          </div>
-          <div className="chart-wrapper doughnut-wrapper">
-            <Doughnut data={processedData.getPatientStatusData()} options={commonOptions} />
-          </div>
-        </div>
-
-        {/* Chart 3: Top Medications */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3>Most Prescribed</h3>
-          </div>
-          <div className="chart-wrapper pie-wrapper">
-            <Pie data={processedData.getTopMedicationsData()} options={commonOptions} />
-          </div>
-        </div>
-        
-        {/* Chart 4: Top Diagnoses */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3>Top Diagnoses</h3>
-             <div className="time-toggle">
-              <button onClick={() => setIssuesTimeframe('day')} className={issuesTimeframe === 'day' ? 'active' : ''}>Day</button>
-              <button onClick={() => setIssuesTimeframe('week')} className={issuesTimeframe === 'week' ? 'active' : ''}>Week</button>
-              <button onClick={() => setIssuesTimeframe('year')} className={issuesTimeframe === 'year' ? 'active' : ''}>Year</button>
+        {/* --- CHARTS GRID --- */}
+        <div style={styles.chartsGrid}>
+          
+          {/* Chart 1: Volume */}
+          <div style={styles.chartCard}>
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>Prescription Volume</h3>
+              <div style={styles.toggleContainer}>
+                {['day', 'week', 'year'].map(t => (
+                    <button 
+                        key={t}
+                        onClick={() => setVolumeTimeframe(t)} 
+                        style={{...styles.toggleBtn, ...(volumeTimeframe === t ? styles.activeBtn : {})}}
+                    >
+                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </button>
+                ))}
+              </div>
+            </div>
+            <div style={styles.chartWrapper}>
+              <Bar data={processedData.getVolumeData()} options={axisOptions} />
             </div>
           </div>
-          <div className="chart-wrapper">
-            <Bar options={horizontalOptions} data={processedData.getTopIssuesData()} />
-          </div>
-        </div>
 
+          {/* Chart 2: New vs Returning */}
+          <div style={styles.chartCard}>
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>Patient Demographics</h3>
+              <FaCalendarAlt style={{color:'#cbd5e1'}}/>
+            </div>
+            <div style={styles.chartWrapper}>
+              <Doughnut data={processedData.getPatientStatusData()} options={commonOptions} />
+            </div>
+          </div>
+
+          {/* Chart 3: Top Medications */}
+          <div style={styles.chartCard}>
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>Most Prescribed</h3>
+              <FaCalendarAlt style={{color:'#cbd5e1'}}/>
+            </div>
+            <div style={styles.chartWrapper}>
+              <Pie data={processedData.getTopMedicationsData()} options={commonOptions} />
+            </div>
+          </div>
+          
+          {/* Chart 4: Top Diagnoses */}
+          <div style={styles.chartCard}>
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>Top Diagnoses</h3>
+               <div style={styles.toggleContainer}>
+                {['day', 'week', 'year'].map(t => (
+                    <button 
+                        key={t}
+                        onClick={() => setIssuesTimeframe(t)} 
+                        style={{...styles.toggleBtn, ...(issuesTimeframe === t ? styles.activeBtn : {})}}
+                    >
+                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                    </button>
+                ))}
+              </div>
+            </div>
+            <div style={styles.chartWrapper}>
+              <Bar options={horizontalOptions} data={processedData.getTopIssuesData()} />
+            </div>
+          </div>
+
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

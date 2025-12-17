@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../../hooks/useAppContext';
 import { addPatientAPI, getDoctorPatientsAPI } from '../../services/apiService'; 
-import './PatientHistory.css';
-import { FaEye, FaPrint, FaTimes, FaSearch } from 'react-icons/fa';
+import { FaEye, FaPrint, FaTimes, FaSearch, FaUserPlus, FaHistory, FaStethoscope } from 'react-icons/fa';
 
 const PatientHistory = () => {
   const { currentUser, prescriptions = [], medicinesDB = [] } = useAppContext();
@@ -32,7 +31,6 @@ const PatientHistory = () => {
         const result = await getDoctorPatientsAPI(doctorId);
         if (result.success) {
           setMyPatients(result.data);
-          // Don't show list initially, wait for search
           setFilteredPatients(result.data); 
         }
       }
@@ -86,7 +84,6 @@ const PatientHistory = () => {
 
   const selectPatient = (patient) => {
     setSelectedPatientId(patient._id);
-    // Use name, fallback to username if name is missing
     setSearchTerm(patient.name || patient.username); 
     setShowSuggestions(false);
   };
@@ -131,197 +128,483 @@ const PatientHistory = () => {
     }
   };
 
+  // --- STYLES ---
+  const styles = {
+    pageContainer: {
+      minHeight: '100vh',
+      width: '99%',
+      maxWidth: '100vw',
+      display: 'flex',
+      flexDirection: 'column',
+      boxSizing: 'border-box',
+      padding: '0px',
+      fontFamily: "'Poppins', sans-serif",
+    },
+    // HEADER SECTION
+    topRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '20px',
+      width: '98%',
+      backgroundColor: '#ffffff', 
+      padding: '20px',            
+      borderRadius: '20px', 
+    },
+    headerContent: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '15px',
+    },
+    headerIcon: {
+      backgroundColor: '#e0e7ff', 
+      color: '#4338ca', 
+      padding: '12px',
+      borderRadius: '12px',
+      fontSize: '24px',
+      display: 'flex',
+    },
+    headerTitle: {
+      margin: 0,
+      fontSize: '26px',
+      fontWeight: '700',
+      color: '#1e293b',
+    },
+    headerSubtitle: {
+      margin: 0,
+      fontSize: '14px',
+      color: '#64748b',
+    },
+    addButton: {
+      backgroundColor: '#0f172a',
+      color: '#ffffff',
+      border: 'none',
+      padding: '12px 24px',
+      borderRadius: '10px',
+      fontSize: '14px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      transition: 'all 0.2s',
+    },
+
+    // BOTTOM / CONTENT SECTION
+    contentPanel: {
+      backgroundColor: '#ffffff',
+      borderRadius: '20px',
+      border: '1px solid #e2e8f0',
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      width: '101%',
+    },
+    
+    // Search Toolbar inside Content Panel
+    searchToolbar: {
+        padding: '20px',
+        borderBottom: '1px solid #f1f5f9',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px',
+        backgroundColor: '#fafbfc'
+    },
+    searchWrapper: {
+        position: 'relative',
+        width: '100%',
+        maxWidth: '500px',
+    },
+    searchInput: {
+        width: '100%',
+        padding: '12px 40px 12px 15px',
+        borderRadius: '8px',
+        border: '1px solid #cbd5e1',
+        fontSize: '14px',
+        fontFamily: 'inherit',
+        outline: 'none',
+    },
+    searchIcon: {
+        position: 'absolute',
+        right: '15px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        color: '#94a3b8',
+    },
+    dropdown: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: 'white',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        marginTop: '5px',
+        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+        zIndex: 50,
+        maxHeight: '200px',
+        overflowY: 'auto',
+    },
+    dropdownItem: {
+        padding: '10px 15px',
+        cursor: 'pointer',
+        borderBottom: '1px solid #f8fafc',
+        display: 'flex',
+        justifyContent: 'space-between',
+    },
+    
+    // Table Area
+    tableContainer: {
+        width: '100%',
+        overflowX: 'auto',
+        flex: 1,
+    },
+    table: {
+        width: '100%',
+        borderCollapse: 'collapse',
+        minWidth: '800px',
+    },
+    th: {
+        backgroundColor: '#ffffff',
+        color: '#64748b',
+        fontWeight: '600',
+        textAlign: 'left',
+        padding: '18px 45px', // Changed to move content right
+        fontSize: '13px',
+        textTransform: 'uppercase',
+        borderBottom: '2px solid #f1f5f9',
+    },
+    td: {
+        padding: '20px 45px', // Changed to move content right
+        borderBottom: '1px solid #f8fafc',
+        color: '#334155',
+        fontSize: '15px',
+        verticalAlign: 'middle',
+    },
+    actionBtn: {
+        backgroundColor: '#eff6ff',
+        color: '#2563eb',
+        border: '1px solid #dbeafe',
+        padding: '8px 16px',
+        borderRadius: '6px',
+        fontSize: '13px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        transition: 'background 0.2s',
+    },
+    emptyState: {
+        padding: '60px',
+        textAlign: 'center',
+        color: '#94a3b8',
+        fontSize: '16px',
+    },
+
+    // Modals
+    modalOverlay: {
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(2px)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+    },
+    modalContentSmall: {
+        backgroundColor: 'white',
+        padding: '30px',
+        borderRadius: '16px',
+        width: '400px',
+        fontFamily: "'Poppins', sans-serif",
+    },
+    inputGroup: { marginBottom: '15px' },
+    label: { display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#475569' },
+    modalInput: { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' },
+    modalActions: { display: 'flex', gap: '10px', marginTop: '20px' },
+    
+    // Rx Paper Modal
+    rxPaper: {
+        backgroundColor: 'white',
+        width: '800px',
+        maxWidth: '90%',
+        maxHeight: '90vh',
+        overflowY: 'auto',
+        padding: '40px',
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        fontFamily: "'Times New Roman', serif", // Keep Rx professional
+        color: 'black',
+        position: 'relative'
+    }
+  };
+
   return (
-    <div className="patient-history-container">
-      <h2>Patient History Management</h2>
+    <>
+      <style>
+        {`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');`}
+      </style>
 
-      {/* --- CONTROLS --- */}
-      <div className="controls-wrapper">
-        <div className="control-block add-block">
-          <div className="block-header">
-            <h3>Add New Patient</h3>
-            <p>Link a new patient using their code.</p>
-          </div>
-          <button className="primary-btn" onClick={() => setShowAddModal(true)}>+ Link Patient</button>
-        </div>
-
-        <div className="control-block search-block" ref={searchRef}>
-          <div className="block-header">
-            <h3>Search Records</h3>
-            <p>Find existing patient history.</p>
+      <div style={styles.pageContainer}>
+        
+        {/* --- HEADER PART --- */}
+        <div style={styles.topRow}>
+          <div style={styles.headerContent}>
+            <div style={styles.headerIcon}><FaHistory /></div>
+            <div>
+              <h1 style={styles.headerTitle}>Patient History</h1>
+              <p style={styles.headerSubtitle}>View and manage past medical records</p>
+            </div>
           </div>
           
-          {/* FIX: Suggestions dropdown is now INSIDE this relative wrapper */}
-          <div className="search-input-wrapper">
-            <input 
-              type="text" 
-              placeholder="Start typing name..." 
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onFocus={() => {
-                  setShowSuggestions(true);
-                  if(searchTerm === '') setFilteredPatients(myPatients);
-              }}
-              className="patient-search-input"
-            />
-            {selectedPatientId ? 
-              <button className="clear-search-btn" onClick={clearSelection}>✕</button> : 
-              <FaSearch className="search-icon-static"/>
-            }
+          <button style={styles.addButton} onClick={() => setShowAddModal(true)}>
+            <FaUserPlus /> Link New Patient
+          </button>
+        </div>
 
-            {/* DROPDOWN MOVED HERE */}
-            {showSuggestions && (
-              <div className="suggestions-list">
-                {filteredPatients.length > 0 ? (
-                  filteredPatients.map(patient => (
-                    <div key={patient._id} className="suggestion-item" onClick={() => selectPatient(patient)}>
-                      <span className="s-name">{patient.name || patient.username || "Unknown"}</span>
-                      <span className="s-username">@{patient.username}</span>
+        {/* --- BOTTOM CONTENT PART --- */}
+        <div style={styles.contentPanel}>
+            
+            {/* Search Toolbar */}
+            <div style={styles.searchToolbar}>
+                <div style={styles.searchWrapper} ref={searchRef}>
+                    <input 
+                        type="text" 
+                        placeholder="Search patient by name or username..." 
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onFocus={() => {
+                           setShowSuggestions(true);
+                           if(searchTerm === '') setFilteredPatients(myPatients);
+                        }}
+                        style={styles.searchInput}
+                    />
+                    {selectedPatientId ? 
+                        <button 
+                            onClick={clearSelection}
+                            style={{...styles.searchIcon, border:'none', background:'none', cursor:'pointer', color:'#ef4444', fontWeight:'bold'}}
+                        >✕</button>
+                        :
+                        <FaSearch style={styles.searchIcon} />
+                    }
+
+                    {/* Suggestions Dropdown */}
+                    {showSuggestions && (
+                        <div style={styles.dropdown}>
+                            {filteredPatients.length > 0 ? (
+                                filteredPatients.map(patient => (
+                                    <div 
+                                        key={patient._id} 
+                                        style={styles.dropdownItem}
+                                        onClick={() => selectPatient(patient)}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                    >
+                                        <span style={{fontWeight:'600', color:'#1e293b'}}>{patient.name || patient.username}</span>
+                                        <span style={{fontSize:'12px', color:'#64748b'}}>@{patient.username}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div style={{padding:'15px', color:'#94a3b8', textAlign:'center'}}>No patients found</div>
+                            )}
+                        </div>
+                    )}
+                </div>
+                {selectedPatientId && (
+                    <div style={{fontSize:'14px', color:'#059669', backgroundColor:'#d1fae5', padding:'8px 12px', borderRadius:'6px', display:'flex', alignItems:'center', gap:'6px'}}>
+                        <FaStethoscope /> Viewing records for: <strong>{searchTerm}</strong>
                     </div>
-                  ))
-                ) : (
-                  <div className="no-suggestion">No patients found.</div>
                 )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+            </div>
 
-      {/* --- RESULTS TABLE --- */}
-      <div className="history-results-container">
-        {selectedPatientId ? (
-          <>
-            <h3 className="results-title">
-              Prescriptions for <span className="highlight-name">{searchTerm}</span>
-            </h3>
-            
-            {patientPrescriptions.length > 0 ? (
-              <div className="prescription-table">
-                <div className="table-header">
-                  <span style={{flex: 1}}>Date Issued</span>
-                  <span style={{flex: 2}}>Diagnosis</span>
-                  <span style={{flex: 1, textAlign: 'center'}}>Validity</span>
-                  <span style={{flex: 1, textAlign: 'right'}}>View</span>
+            {/* Results Table */}
+            <div style={styles.tableContainer}>
+                <table style={styles.table}>
+                    <thead>
+                        <tr>
+                            <th style={{...styles.th, width:'10%'}}>S.No</th>
+                            <th style={{...styles.th, width:'15%'}}>Date Issued</th>
+                            <th style={{...styles.th, width:'30%'}}>Diagnosis</th>
+                            <th style={{...styles.th, width:'25%'}}>Validity Status</th>
+                            <th style={{...styles.th, width:'20%'}}>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {selectedPatientId ? (
+                            patientPrescriptions.length > 0 ? (
+                                patientPrescriptions.map((p, index) => (
+                                    <tr key={p.id || p.date} style={{borderBottom: '1px solid #f8fafc'}}>
+                                        <td style={styles.td}>
+                                            <div style={{fontWeight:'500', color:'#64748b'}}>#{index + 1}</div>
+                                        </td>
+                                        <td style={styles.td}>
+                                            <div style={{fontWeight:'500'}}>{p.date}</div>
+                                        </td>
+                                        <td style={styles.td}>
+                                            <div style={{fontWeight:'600', color:'#1e293b'}}>{p.diagnosis}</div>
+                                        </td>
+                                        <td style={styles.td}>
+                                            <span style={{
+                                                fontSize: '12px', 
+                                                padding: '4px 8px', 
+                                                borderRadius: '12px', 
+                                                backgroundColor: '#f1f5f9', 
+                                                color:'#475569',
+                                                fontWeight: '600'
+                                            }}>
+                                                {p.validUntil ? `Valid until ${p.validUntil}` : 'No Expiry'}
+                                            </span>
+                                        </td>
+                                        <td style={styles.td}>
+                                            <button style={styles.actionBtn} onClick={() => handleViewPrescription(p)}>
+                                                <FaEye /> View Prescription
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="5" style={styles.emptyState}>No prescription records found for this patient.</td>
+                                </tr>
+                            )
+                        ) : (
+                            <tr>
+                                <td colSpan="5" style={styles.emptyState}>
+                                    Please search and select a patient to view their history.
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {/* --- ADD PATIENT MODAL --- */}
+        {showAddModal && (
+            <div style={styles.modalOverlay} onClick={() => setShowAddModal(false)}>
+                <div style={styles.modalContentSmall} onClick={e => e.stopPropagation()}>
+                    <h2 style={{marginTop:0, fontSize:'20px', color:'#1e293b'}}>Link New Patient</h2>
+                    <p style={{color:'#64748b', fontSize:'14px', marginBottom:'20px'}}>Enter the patient's details to add them to your list.</p>
+                    
+                    <form onSubmit={handleAddPatient}>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Patient Username</label>
+                            <input 
+                                type="text" 
+                                value={newPatientUsername} 
+                                onChange={(e) => setNewPatientUsername(e.target.value)} 
+                                style={styles.modalInput} 
+                                required 
+                            />
+                        </div>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}>Secret Code</label>
+                            <input 
+                                type="text" 
+                                value={newPatientCode} 
+                                onChange={(e) => setNewPatientCode(e.target.value)} 
+                                style={styles.modalInput} 
+                                required 
+                            />
+                        </div>
+                        
+                        {addMsg.text && (
+                            <div style={{
+                                padding: '10px', 
+                                borderRadius: '6px', 
+                                fontSize: '13px', 
+                                marginBottom: '15px',
+                                backgroundColor: addMsg.type === 'error' ? '#fee2e2' : '#dcfce7',
+                                color: addMsg.type === 'error' ? '#ef4444' : '#166534'
+                            }}>
+                                {addMsg.text}
+                            </div>
+                        )}
+
+                        <div style={styles.modalActions}>
+                            <button type="submit" style={{...styles.addButton, justifyContent:'center', flex:1}}>Link Patient</button>
+                            <button 
+                                type="button" 
+                                onClick={() => setShowAddModal(false)}
+                                style={{
+                                    border: 'none', 
+                                    backgroundColor: '#f1f5f9', 
+                                    color: '#64748b', 
+                                    padding: '10px 20px', 
+                                    borderRadius: '8px', 
+                                    cursor: 'pointer',
+                                    fontWeight: '600'
+                                }}
+                            >Cancel</button>
+                        </div>
+                    </form>
                 </div>
-                {patientPrescriptions.map(p => (
-                  <div key={p.id || p.date} className="table-row">
-                    <span className="row-date" style={{flex: 1}}>{p.date}</span>
-                    <span className="row-diagnosis" style={{flex: 2}}><strong>{p.diagnosis}</strong></span>
-                    <span style={{flex: 1, textAlign: 'center', fontSize: '0.85rem', color: '#666'}}>
-                        {p.validUntil ? `Until ${p.validUntil}` : 'No Expiry'}
-                    </span>
-                    <span className="row-action" style={{flex: 1, textAlign: 'right'}}>
-                      <button className="view-btn" onClick={() => handleViewPrescription(p)}>
-                        <FaEye /> Open
-                      </button>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-state">No prescription records found for this patient.</div>
-            )}
-          </>
-        ) : (
-          <div className="empty-state">Select a patient above to view their records.</div>
+            </div>
         )}
+
+        {/* --- VIEW PRESCRIPTION MODAL (Rx Paper Style) --- */}
+        {showModal && selectedRx && (
+            <div style={styles.modalOverlay} onClick={closeModal}>
+                <div style={styles.rxPaper} onClick={e => e.stopPropagation()}>
+                    <button 
+                        onClick={closeModal}
+                        style={{position:'absolute', top:'20px', right:'20px', background:'none', border:'none', fontSize:'20px', cursor:'pointer'}}
+                    ><FaTimes /></button>
+
+                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:'30px', borderBottom:'3px solid black', paddingBottom:'20px'}}>
+                        <div>
+                            <h2 style={{margin:0, fontSize:'28px', color:'#1e293b'}}>Dr. {selectedRx.doctorName || currentUser.name}</h2>
+                            <p style={{margin:'5px 0 0 0', color:'#666', fontStyle:'italic'}}>General Medicine</p>
+                        </div>
+                        <div style={{textAlign:'right'}}>
+                            <div style={{marginBottom:'5px'}}><strong>DATE:</strong> {selectedRx.date}</div>
+                            <div><strong>VALID UNTIL:</strong> {selectedRx.validUntil || "Not Specified"}</div>
+                        </div>
+                    </div>
+
+                    <div style={{backgroundColor:'#f8fafc', padding:'15px', borderTop:'1px solid #000', borderBottom:'1px solid #000', marginBottom:'30px', display:'flex', gap:'30px'}}>
+                        <div><strong style={{fontSize:'12px', color:'#666'}}>PATIENT:</strong> <br/><span style={{fontSize:'18px'}}>{searchTerm}</span></div>
+                        <div><strong style={{fontSize:'12px', color:'#666'}}>DIAGNOSIS:</strong> <br/><span style={{fontSize:'18px'}}>{selectedRx.diagnosis}</span></div>
+                    </div>
+
+                    <h3 style={{textDecoration:'underline', textAlign:'center', marginBottom:'20px'}}>Rx (Prescribed Medications)</h3>
+                    
+                    <table style={{width:'100%', borderCollapse:'collapse', marginBottom:'40px'}}>
+                        <thead>
+                            <tr style={{borderBottom:'2px solid black'}}>
+                                <th style={{textAlign:'left', padding:'10px'}}>MEDICINE</th>
+                                <th style={{textAlign:'left', padding:'10px'}}>TYPE</th>
+                                <th style={{textAlign:'center', padding:'10px'}}>QTY</th>
+                                <th style={{textAlign:'right', padding:'10px'}}>FREQUENCY</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             {selectedRx.medicines && selectedRx.medicines.map((med, idx) => (
+                                <tr key={idx} style={{borderBottom:'1px solid #e2e8f0'}}>
+                                    <td style={{padding:'12px 10px', fontWeight:'bold'}}>{getMedicineName(med.medicineId)}</td>
+                                    <td style={{padding:'12px 10px'}}>{med.type} {med.strength}</td>
+                                    <td style={{padding:'12px 10px', textAlign:'center'}}>{med.quantity}</td>
+                                    <td style={{padding:'12px 10px', textAlign:'right', fontFamily:'monospace'}}>{med.frequency}</td>
+                                </tr>
+                             ))}
+                        </tbody>
+                    </table>
+
+                    <div style={{display:'flex', justifyContent:'space-between', marginTop:'50px', alignItems:'flex-end'}}>
+                         <div style={{borderTop:'1px dashed black', width:'200px', textAlign:'center', paddingTop:'5px'}}>Doctor's Signature</div>
+                         <button onClick={() => window.print()} style={{backgroundColor:'black', color:'white', border:'none', padding:'10px 20px', cursor:'pointer', display:'flex', alignItems:'center', gap:'8px'}}>
+                            <FaPrint /> Print Prescription
+                         </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
       </div>
-
-      {/* --- ADD PATIENT MODAL --- */}
-      {showAddModal && (
-        <div className="modal-overlay">
-          <div className="modal-content small-modal">
-            <h3>Link New Patient</h3>
-            <form onSubmit={handleAddPatient}>
-              <div className="input-group">
-                <label>Username</label>
-                <input type="text" value={newPatientUsername} onChange={(e) => setNewPatientUsername(e.target.value)} required />
-              </div>
-              <div className="input-group">
-                <label>Secret Code</label>
-                <input type="text" value={newPatientCode} onChange={(e) => setNewPatientCode(e.target.value)} required />
-              </div>
-              {addMsg.text && <p className={`msg ${addMsg.type}`}>{addMsg.text}</p>}
-              <div className="modal-actions">
-                <button type="submit" className="confirm-btn">Add</button>
-                <button type="button" className="cancel-btn" onClick={() => setShowAddModal(false)}>Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* --- VIEW PRESCRIPTION MODAL --- */}
-      {showModal && selectedRx && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content rx-paper-look" onClick={e => e.stopPropagation()}>
-            
-            <div className="rx-paper-header">
-                <div className="doc-info">
-                    <h2>Dr. {selectedRx.doctorName || currentUser.name}</h2>
-                    <p>General Medicine</p>
-                </div>
-                <div className="rx-meta-info">
-                    <div className="meta-row">
-                        <strong>DATE:</strong> <span>{selectedRx.date}</span>
-                    </div>
-                    <div className="meta-row">
-                        <strong>VALID UNTIL:</strong> <span>{selectedRx.validUntil || "Not Specified"}</span>
-                    </div>
-                </div>
-                <button className="close-btn-abs" onClick={closeModal}><FaTimes /></button>
-            </div>
-
-            <div className="rx-patient-bar">
-                <div className="pb-item">
-                    <span className="pb-label">PATIENT:</span> 
-                    <span className="pb-val">{searchTerm}</span>
-                </div>
-                <div className="pb-item">
-                    <span className="pb-label">DIAGNOSIS:</span> 
-                    <span className="pb-val">{selectedRx.diagnosis}</span>
-                </div>
-            </div>
-
-            <h4 className="rx-table-title">Rx (Prescribed Medications)</h4>
-            <div className="rx-table-container">
-              <table className="rx-med-table">
-                <thead>
-                  <tr>
-                    <th style={{width: '40%'}}>MEDICINE NAME</th>
-                    <th style={{width: '20%'}}>STRENGTH/TYPE</th>
-                    <th style={{width: '15%', textAlign:'center'}}>QUANTITY</th>
-                    <th style={{width: '25%', textAlign:'right'}}>FREQUENCY</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedRx.medicines && selectedRx.medicines.map((med, idx) => (
-                      <tr key={idx}>
-                        <td className="med-name-cell">{getMedicineName(med.medicineId)}</td>
-                        <td>{med.type} {med.strength}</td>
-                        <td style={{textAlign:'center'}}>{med.quantity}</td>
-                        <td className="freq-cell" style={{textAlign:'right'}}>{med.frequency}</td>
-                      </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="rx-footer">
-               <div className="sign-block">
-                 Signature / Digital Stamp
-               </div>
-               <button className="print-btn-rx" onClick={() => window.print()}>
-                 <FaPrint /> Print / Save
-               </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-    </div>
+    </>
   );
 };
 

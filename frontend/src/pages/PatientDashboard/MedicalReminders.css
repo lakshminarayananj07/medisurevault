@@ -1,0 +1,266 @@
+/* MedicalReminders.css */
+
+/* --- 1. MAIN LAYOUT (Full Height Fix) --- */
+.medical-reminders-page {
+  width: 100%;
+  height: 100vh; /* Forces full viewport height */
+  background-color: #f8fafc; /* Light grey background */
+  padding: 30px;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 2. HEADER SECTION --- */
+.reminders-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-shrink: 0; /* Prevents header from shrinking */
+}
+
+.header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-icon-box {
+  width: 50px;
+  height: 50px;
+  background-color: #dbeafe; /* Light Blue */
+  color: #2563eb; /* Blue */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.header-text h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  color: #0f172a;
+}
+
+.header-text p {
+  margin: 4px 0 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* Primary Button */
+.btn-add-reminder {
+  background-color: #0f172a; /* Dark Navy */
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.btn-add-reminder:hover {
+  background-color: #1e293b;
+}
+
+/* --- 3. MAIN CARD (The White Box) --- */
+.reminders-content-wrapper {
+  flex: 1; /* THIS IS KEY: It grows to fill all remaining vertical space */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevents double scrollbars */
+}
+
+.reminders-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Fills the wrapper */
+  overflow: hidden;
+}
+
+/* --- 4. TABLE STYLING --- */
+.table-scroll-area {
+  flex: 1;
+  overflow-y: auto; /* Adds scrollbar inside the card if needed */
+}
+
+.reminders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reminders-table thead {
+  background-color: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.reminders-table th {
+  text-align: left;
+  padding: 18px 24px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.reminders-table td {
+  padding: 18px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.reminders-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Table Text Styles */
+.med-name { font-weight: 700; color: #0f172a; display: block; }
+.med-instruction { font-size: 0.8rem; color: #64748b; margin-top: 2px; display: block; }
+.time-display { display: flex; align-items: center; gap: 6px; font-weight: 600; color: #2563eb; }
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.status-badge.pending { background-color: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }
+.status-badge.taken { background-color: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7; }
+
+/* Action Buttons */
+.action-group { display: flex; gap: 8px; }
+
+.btn-icon {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.btn-mark { background-color: #eff6ff; color: #2563eb; }
+.btn-mark:hover { background-color: #dbeafe; }
+
+.btn-undo { background-color: #f1f5f9; color: #64748b; }
+.btn-undo:hover { background-color: #e2e8f0; }
+
+.btn-delete { background-color: #fef2f2; color: #ef4444; }
+.btn-delete:hover { background-color: #fee2e2; }
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 50px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* --- 5. MODAL STYLING --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.custom-modal {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  padding: 30px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 { margin: 0; font-size: 1.4rem; color: #0f172a; }
+.btn-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #94a3b8; }
+.btn-close:hover { color: #ef4444; }
+
+/* Form Styles */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #475569; font-size: 0.9rem; }
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+  background-color: #f8fafc;
+  color: #334155;
+  box-sizing: border-box;
+}
+.form-input:focus, .form-select:focus { outline: none; border-color: #3b82f6; background-color: white; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+.btn-save {
+  width: 100%;
+  padding: 14px;
+  background-color: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.btn-save:hover { background-color: #1e293b; }
+
+/* Alarm Specifics */
+.alarm-icon { font-size: 3.5rem; color: #f59e0b; margin-bottom: 15px; }
+.alarm-text { font-size: 1.2rem; margin: 15px 0; color: #334155; }
+.alarm-instruction { background: #fff7ed; padding: 15px; border-radius: 8px; color: #c2410c; margin-bottom: 20px; border: 1px solid #ffedd5; }
+.btn-taken { background-color: #16a34a; width: 100%; padding: 14px; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-snooze { background: none; border: none; margin-top: 15px; color: #64748b; cursor: pointer; text-decoration: underline; }
+
+/* Shake Animation for Alarm */
+.shake { animation: shake 0.5s infinite; }
+@keyframes shake {
+  0% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 50% { transform: rotate(15deg); } 75% { transform: rotate(-15deg); } 100% { transform: rotate(0deg); }
+}

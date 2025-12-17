@@ -5,6 +5,39 @@
    ========================================= */
 
 
+/* --- APPEND THESE TO THE BOTTOM OF PatientDashboard.css --- */
+
+/* 1. Forces the main page container to take full height */
+.full-page-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 20px;
+}
+
+/* 2. Forces the content wrapper to consume all remaining space below header */
+.dashboard-content.fill-height {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px; /* Space between header and card */
+}
+
+/* 3. Forces the white card (Section Panel) to stretch to the bottom */
+.section-panel.grow-panel {
+  flex: 1; /* Grows to fill empty space */
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0; /* Removes bottom margin so it hits the bottom edge */
+  height: 100%;
+}
+
+/* 4. Ensures the table scrolls inside the card if there are many reminders */
+.table-container.scrollable-table {
+  flex: 1;
+  overflow-y: auto;
+}
 
 /* Table Container */
 
@@ -18,7 +51,7 @@
 
 .section-panel {
 
-  min-height: 320px; /* <--- ADD THIS LINE (Adjust 450px to whatever height you want) */
+  min-height: 350px; /* <--- ADD THIS LINE (Adjust 450px to whatever height you want) */
 
 }
 
@@ -436,3 +469,4 @@ label {
     grid-template-columns: 1fr;
   }
 }
+

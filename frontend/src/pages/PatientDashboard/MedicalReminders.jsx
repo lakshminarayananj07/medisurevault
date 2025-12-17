@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../../hooks/useAppContext';
-import './PatientDashboard.css'; 
+import './PatientDashboard.css';
 import { FaCalendarCheck, FaPills, FaClock, FaCheckCircle, FaPlus, FaTrash, FaTimes, FaBell } from 'react-icons/fa';
 
 const MedicalReminders = () => {
@@ -14,7 +14,7 @@ const MedicalReminders = () => {
     const todayStr = new Date().toDateString();
     return parsedData.map(item => {
       if (item.lastTakenDate !== todayStr) {
-        return { ...item, status: 'Pending', alerted: false }; 
+        return { ...item, status: 'Pending', alerted: false };
       }
       return item;
     });
@@ -42,7 +42,7 @@ const MedicalReminders = () => {
           triggerAlarm(item);
         }
       });
-    }, 10000); 
+    }, 10000);
     return () => clearInterval(timer);
   }, [reminders]);
 
@@ -79,10 +79,10 @@ const MedicalReminders = () => {
     setReminders(prev => prev.map(item => {
       if (item.id === id) {
         const newStatus = item.status === 'Pending' ? 'Taken' : 'Pending';
-        return { 
-          ...item, 
+        return {
+          ...item,
           status: newStatus,
-          lastTakenDate: newStatus === 'Taken' ? todayStr : null 
+          lastTakenDate: newStatus === 'Taken' ? todayStr : null
         };
       }
       return item;
@@ -105,18 +105,19 @@ const MedicalReminders = () => {
   if (!currentUser) return <div className="loading-state">Loading...</div>;
 
   return (
-    // FIX 1: Use minHeight with calc() to force it to fill the screen minus header/padding
-    <div className="patient-dashboard-page" style={{ 
-      minHeight: 'calc(100vh - 120px)', // Ensures minimum height is screen size
-      width: '100%', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      boxSizing: 'border-box', 
-      padding: '0 20px' 
+    // FIX: Main Container explicitly set to 100% width and box-sizing
+    <div className="patient-dashboard-page" style={{
+      minHeight: '100vh',
+      width: '97%',
+      maxWidth: '100vw', 
+      display: 'flex',
+      flexDirection: 'column',
+      boxSizing: 'border-box',
+      padding: '0px'
     }}>
       
       {/* Header */}
-      <div className="dashboard-top-row">
+      <div className="dashboard-top-row" style={{ width: '99.5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <header className="dashboard-header">
           <div className="header-icon"><FaCalendarCheck /></div>
           <div className="header-text">
@@ -132,14 +133,15 @@ const MedicalReminders = () => {
         </div>
       </div>
 
-      {/* FIX 2: Flex 1 causes this container to grow */}
-      <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+      {/* FIX: Dashboard Content forced to 100% width */}
+      <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', maxWidth: '100%' }}>
         
-        {/* FIX 3: Flex 1 on section-panel forces the white box to stretch to bottom */}
-        <div className="section-panel full-width" style={{ flex: 1, marginBottom: 0 }}>
+        {/* FIX: Panel forced to 100% width */}
+        <div className="section-panel full-width" style={{ flex: 1, marginBottom: 0, width: '100%', maxWidth: '100%' }}>
           
-          <div className="table-container">
-            <table className="modern-table">
+          <div className="table-container" style={{ width: '100%', overflowX: 'auto' }}>
+            {/* FIX: Table forced to 100% width */}
+            <table className="modern-table" style={{ width: '100%', minWidth: '100%' }}>
               <thead>
                 <tr>
                   <th style={{ width: '25%' }}>Medicine</th>
@@ -147,6 +149,8 @@ const MedicalReminders = () => {
                   <th style={{ width: '15%' }}>Time</th>
                   <th style={{ width: '20%' }}>Status</th>
                   <th style={{ width: '15%' }}>Action</th>
+                  {/* NEW COLUMN */}
+                  <th style={{ width: '10%' }}>Remove</th> 
                 </tr>
               </thead>
               <tbody>
@@ -168,19 +172,20 @@ const MedicalReminders = () => {
                         )}
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                           <button onClick={() => toggleStatus(item.id)} className="icon-btn-view">
-                             {item.status === 'Taken' ? 'Undo' : 'Mark Done'}
-                           </button>
-                           <button onClick={() => deleteReminder(item.id)} className="icon-btn-view" style={{ color: 'red', background: '#fee2e2' }}>
-                             <FaTrash />
-                           </button>
-                        </div>
+                         <button onClick={() => toggleStatus(item.id)} className="icon-btn-view">
+                           {item.status === 'Taken' ? 'Undo' : 'Mark Done'}
+                         </button>
+                      </td>
+                      {/* NEW REMOVE CELL */}
+                      <td>
+                         <button onClick={() => deleteReminder(item.id)} className="icon-btn-view" style={{ color: 'red', background: '#fee2e2' }}>
+                           <FaTrash />
+                         </button>
                       </td>
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="5" className="empty-state-cell">No reminders set. Click "Set New Reminder" to add one.</td></tr>
+                  <tr><td colSpan="6" className="empty-state-cell">No reminders set. Click "Set New Reminder" to add one.</td></tr>
                 )}
               </tbody>
             </table>
@@ -247,8 +252,8 @@ const MedicalReminders = () => {
               {showAlarmModal.instruction || "No special instructions"}
             </div>
             
-            <button 
-              className="action-btn primary" 
+            <button
+              className="action-btn primary"
               style={{ width: '100%', justifyContent: 'center' }}
               onClick={() => {
                 toggleStatus(showAlarmModal.id);
