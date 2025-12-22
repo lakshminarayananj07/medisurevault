@@ -1,5 +1,5 @@
 .dashboard-container {
-  display: flex; /* <-- This makes it a flex container */
+  display: flex;
   height: 100vh;
   background-color: #121212;
   color: #e0e0e0;
@@ -7,16 +7,21 @@
 }
 
 .sidebar {
-  width: 250px; /* <-- Sidebar has a fixed width */
+  width: 250px;
   background-color: #1e1e1e;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #2a2a2a;
-  flex-shrink: 0; /* Prevents sidebar from shrinking */
+  flex-shrink: 0;
+  
+  /* Rounded sidebar edges */
+  border-radius: 0 30px 30px 0;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 10;
 }
 
 .sidebar-header {
-  padding: 20px;
+  padding: 25px 20px;
   text-align: center;
   border-bottom: 1px solid #2a2a2a;
 }
@@ -30,6 +35,8 @@
   display: flex;
   flex-direction: column;
   padding: 20px 0;
+  gap: 5px;
+  flex-grow: 1; /* Pushes the footer to the bottom */
 }
 
 .nav-item {
@@ -37,51 +44,56 @@
   color: #b0b0b0;
   text-decoration: none;
   display: block;
-  transition: background-color 0.3s, color 0.3s;
+  transition: all 0.3s ease;
+  
+  /* Rounded page links */
+  margin: 0 15px;
+  border-radius: 15px;
 }
 
 .nav-item:hover,
 .nav-item.active {
-  background-color: #3A86FF;
+  background-color: #333;
   color: #ffffff;
+  transform: translateX(5px);
 }
 
-.main-content {
-  flex-grow: 1; /* <-- THIS IS THE CRITICAL LINE that makes it fill the space */
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden; /* Prevents horizontal overflow */
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 30px;
-  background-color: #1e1e1e;
-  border-bottom: 1px solid #2a2a2a;
-}
-
-.user-info {
-  font-weight: bold;
+/* [NEW] Footer section for Logout */
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid #2a2a2a;
 }
 
 .logout-button {
+  width: 100%; /* Full width in sidebar */
   background-color: #FF006E;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
+  padding: 12px 20px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: bold;
-
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logout-button:hover {
   background-color: #d6005d;
 }
 
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* [REMOVED] .topbar style block entirely */
+
 .page-content {
   padding: 30px;
   overflow-y: auto;
+  height: 100%;
 }

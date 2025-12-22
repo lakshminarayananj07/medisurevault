@@ -8,11 +8,13 @@ import ReminderPopup from './components/specific/ReminderPopup';
 import MedicalReminders from './pages/PatientDashboard/MedicalReminders';
 import AuthPage from './pages/Authpage'; // Note: check capitalization (AuthPage vs Authpage) based on your file
 import DashboardLayout from './components/layout/DashboardLayout';
+import DoctorShare from './pages/PatientDashboard/DoctorShare';
 
 // Doctor Pages
 import DoctorDashboard from './pages/DoctorDashboard/DoctorDashboard';
 import CreatePrescription from './pages/DoctorDashboard/CreatePrescription';
 import PatientHistory from './pages/DoctorDashboard/PatientHistory';
+import DoctorPatientChat from './pages/DoctorDashboard/DoctorPatientChat';
 import Analytics from './pages/DoctorDashboard/Analytics';
 import DoctorProfile from './pages/DoctorDashboard/Profile';
 
@@ -45,6 +47,7 @@ function App() {
           <Route index element={<DoctorDashboard />} />
           <Route path="create" element={<CreatePrescription />} />
           <Route path="history" element={<PatientHistory />} />
+          <Route path="/doctor-dashboard/patient-chat" element={<DoctorPatientChat />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="profile" element={<DoctorProfile />} />
         </Route>
@@ -54,6 +57,7 @@ function App() {
           <Route index element={<PatientDashboard />} />
           <Route path="prescriptions" element={<MyPrescriptions />} />
           <Route path="reminders" element={<MedicalReminders />} />
+          <Route path="/patient-dashboard/doctor-share" element={<DoctorShare />} />
           <Route path="chatbot" element={<AiChatbot />} />
           <Route path="profile" element={<PatientProfile />} />
         </Route>

@@ -1,215 +1,156 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useAppContext } from '../../hooks/useAppContext';
 import { Link } from 'react-router-dom';
+import { getInventoryAPI } from '../../services/apiService'; // [NEW] Import API
 import { 
   FaQrcode, FaClipboardCheck, FaHistory, FaExclamationTriangle, 
-  FaArrowRight, FaChartBar, FaUserShield, FaCalendarAlt
+  FaArrowRight, FaChartBar, FaUserShield, FaCalendarAlt, 
+  FaShieldAlt, FaCircle, FaLock, FaServer, FaBoxOpen
 } from 'react-icons/fa';
 
 const PharmacistDashboard = () => {
-  const { currentUser, prescriptions, inventory } = useAppContext();
+  const { currentUser, prescriptions = [] } = useAppContext();
 
-  // --- 1. REAL-TIME STATS CALCULATION ---
+  // [NEW] Local state for real inventory data
+  const [inventoryData, setInventoryData] = useState([]);
+  const [loadingInventory, setLoadingInventory] = useState(true);
+
+  // --- 1. FETCH REAL INVENTORY DATA ---
+  useEffect(() => {
+    const fetchInventoryData = async () => {
+      const pharmacistId = currentUser?.id || currentUser?._id;
+      if (!pharmacistId) return;
+
+      try {
+        setLoadingInventory(true);
+        // Call the same API used in Stock Management page
+        const result = await getInventoryAPI(pharmacistId);
+        if (result.success) {
+          setInventoryData(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard inventory:", error);
+      } finally {
+        setLoadingInventory(false);
+      }
+    };
+
+    fetchInventoryData();
+  }, [currentUser]);
+
+  // --- 2. REAL-TIME PRESCRIPTION STATS ---
   const stats = useMemo(() => {
-    const todayStr = new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', month: 'short', day: 'numeric' 
-    }); 
+    const todayStr = new Date().toLocaleDateString('en-CA'); 
+    const safePrescriptions = Array.isArray(prescriptions) ? prescriptions : [];
 
-    const todayScans = prescriptions.filter(p => p.date === todayStr).length;
-    const totalScans = prescriptions.length;
-    const pending = prescriptions.filter(p => p.status === 'Pending' || p.status === 'Prescribed').length;
+    const todayScans = safePrescriptions.filter(p => p.date === todayStr).length;
+    const totalScans = safePrescriptions.length;
+    const pending = safePrescriptions.filter(p => p.status === 'Pending' || p.status === 'Prescribed').length;
 
     return { todayScans, totalScans, pending };
   }, [prescriptions]);
 
-  // --- 2. DYNAMIC INVENTORY LOGIC ---
-  const safeInventory = inventory && inventory.length > 0 ? inventory : [
-    { name: 'Amoxicillin 500mg', stock: 5 },
-    { name: 'Metformin 500mg', stock: 12 },
-    { name: 'Paracetamol 650mg', stock: 0 },
-    { name: 'Ibuprofen 400mg', stock: 45 },
-    { name: 'Cetirizine 10mg', stock: 8 },
-  ];
-
+  // --- 3. DYNAMIC LOW STOCK LOGIC ---
   const sortedLowStock = useMemo(() => {
-    return [...safeInventory]
+    // Sort real data by stock level (ascending) to find lowest items
+    // Slice(0, 3) ensures we only show max 3 items, or fewer if list is short
+    return [...inventoryData]
       .sort((a, b) => a.stock - b.stock)
       .slice(0, 3); 
-  }, [safeInventory]);
+  }, [inventoryData]);
 
-  const getStockStatus = (qty) => {
-    if (qty === 0) return { label: 'Out of Stock', color: '#ef4444', bg: '#fee2e2' }; // Red
-    if (qty < 20) return { label: 'Critical', color: '#f59e0b', bg: '#fef3c7' }; // Amber
-    if (qty < 50) return { label: 'Low', color: '#3b82f6', bg: '#dbeafe' }; // Blue
-    return { label: 'Good', color: '#10b981', bg: '#d1fae5' }; // Emerald
+  // Helper: Determine Status based on item's specific limits (Matches Inventory.js)
+  const getStockStatus = (item) => {
+    const low = item.lowLimit ?? 10;   // Default fallback if not set
+    const high = item.highLimit ?? 100;
+
+    if (item.stock === 0) return { label: 'Out of Stock', color: '#ef4444', bg: '#fee2e2' }; 
+    if (item.stock <= low) return { label: 'Low', color: '#f59e0b', bg: '#fef3c7' }; 
+    if (item.stock >= high) return { label: 'Over', color: '#3b82f6', bg: '#dbeafe' }; 
+    return { label: 'Good', color: '#10b981', bg: '#d1fae5' }; 
   };
 
-  // --- 3. CHART DATA CALCULATION ---
+  // --- 4. CHART DATA ---
   const chartData = useMemo(() => {
-    if (prescriptions.length === 0) return { today: 0, average: 0, max: 10 };
-    const uniqueDates = new Set(prescriptions.map(p => p.date));
+    const safePrescriptions = Array.isArray(prescriptions) ? prescriptions : [];
+    if (safePrescriptions.length === 0) return { today: 0, average: 0, max: 10 };
+    
+    const uniqueDates = new Set(safePrescriptions.map(p => p.date));
     const totalDays = uniqueDates.size || 1; 
     const average = Math.round(stats.totalScans / totalDays);
     const max = Math.max(stats.todayScans, average) + 5; 
+    
     return { today: stats.todayScans, average, max };
   }, [stats, prescriptions]);
 
   // --- STYLES ---
   const styles = {
     pageContainer: {
-        minHeight: '92vh',
-        width: '99%',
-        maxWidth: '100vw',
+        minHeight: '100vh',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',
         fontFamily: "'Poppins', sans-serif",
-        gap: '15px',
+        gap: '20px',
+        paddingBottom: '20px'
     },
-    // --- HEADER ---
     topRow: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '98%',
-        backgroundColor: '#ffffff', 
-        padding: '20px',            
-        borderRadius: '20px', 
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%',
+        backgroundColor: '#ffffff', padding: '20px', borderRadius: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', boxSizing: 'border-box'
     },
-    headerContent: { display: 'flex', alignItems: 'center', gap: '20px' },
-    headerIcon: {
-        backgroundColor: '#d1fae5', 
-        color: '#059669', 
-        padding: '12px',
-        borderRadius: '12px',
-        fontSize: '24px',
-        display: 'flex',
-    },
-    headerTitle: { margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e293b' },
+    headerContent: { display: 'flex', alignItems: 'center', gap: '15px' },
+    headerIcon: { backgroundColor: '#d1fae5', color: '#059669', padding: '12px', borderRadius: '12px', fontSize: '24px', display: 'flex' },
+    headerTitle: { margin: 0, fontSize: '26px', fontWeight: '700', color: '#1e293b' },
     headerSubtitle: { margin: 0, fontSize: '14px', color: '#64748b' },
-    dateBadge: {
-        display: 'flex', alignItems: 'center', gap: '8px',
-        backgroundColor: '#f8fafc', padding: '8px 16px',
-        borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#475569'
-    },
+    dateBadge: { display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#f8fafc', padding: '8px 16px', borderRadius: '10px', fontSize: '14px', fontWeight: '600', color: '#475569' },
 
-    // --- CONTENT PANEL ---
-    contentPanel: {
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '15px', 
-        width: '101%',
-    },
+    statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', width: '100%' },
+    statCard: { padding: '24px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', minHeight: '120px' },
+    cardBlue: { background: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)' },
+    cardTeal: { background: 'linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)' },
+    cardPurple: { background: 'linear-gradient(135deg, #c084fc 0%, #9333ea 100%)' },
+    statValue: { fontSize: '28px', fontWeight: '700', margin: 0 },
+    statLabel: { fontSize: '14px', margin: 0, opacity: 0.9 },
+    statIconBox: { width: '50px', height: '50px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', backgroundColor: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(5px)' },
 
-    // 1. STATS ROW
-    statsGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '20px',
-    },
-    // Base Card Style
-    statCard: {
-        borderRadius: '16px',
-        padding: '25px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-        color: '#ffffff' // White text for colored cards
-    },
-    // Specific Gradients (Restoring the previous look)
-    cardBlue: {
-        background: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)', // Blue Gradient
-    },
-    cardTeal: {
-        background: 'linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)', // Teal Gradient
-    },
-    cardPurple: {
-        background: 'linear-gradient(135deg, #c084fc 0%, #9333ea 100%)', // Purple Gradient
-    },
-
-    statValue: { fontSize: '28px', fontWeight: '700', margin: 0, color: '#ffffff' },
-    statLabel: { fontSize: '14px', marginTop: '4px', opacity: 0.9, color: '#ffffff' },
-    
-    // Transparent Icon Box for Colored Cards
-    statIconBox: {
-        width: '50px', height: '50px', borderRadius: '12px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)', // Semi-transparent white
-        backdropFilter: 'blur(5px)',
-        color: '#ffffff'
-    },
-
-    // 2. BOTTOM GRID (Inventory & Charts)
-    bottomGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '20px',
-    },
-    dashboardCard: {
-        backgroundColor: '#ffffff',
-        borderRadius: '20px',
-        border: '1px solid #e2e8f0',
-        padding: '25px',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        minHeight: '350px'
-    },
-    cardHeader: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: '20px',
-        borderBottom: '1px solid #f1f5f9',
-        paddingBottom: '15px'
-    },
-    cardTitle: { margin: 0, fontSize: '18px', fontWeight: '600', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' },
-    cardSubtitle: { fontSize: '12px', color: '#94a3b8', fontWeight: '500' },
+    dashboardContent: { display: 'flex', gap: '20px', width: '100%', flex: 1 },
+    panel: { backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', padding: '30px', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column' },
+    sectionTitle: { fontSize: '18px', fontWeight: '600', color: '#334155', margin: '0 0 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+    subtitle: { fontSize: '12px', color: '#94a3b8', fontWeight: '500' },
 
     stockList: { flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' },
-    stockItem: {
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '12px', backgroundColor: '#f8fafc', borderRadius: '10px'
-    },
+    stockItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '12px', border: '1px solid #f1f5f9' },
     stockName: { fontWeight: '600', color: '#334155', fontSize: '14px' },
-    statusBadge: {
-        padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase'
-    },
+    statusBadge: { padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' },
     stockCount: { fontSize: '13px', fontWeight: '600', color: '#64748b' },
-    
-    viewAllLink: {
-        marginTop: '20px', textDecoration: 'none', color: '#059669', 
-        fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px'
-    },
+    viewAllLink: { marginTop: '20px', textDecoration: 'none', color: '#059669', fontSize: '14px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' },
 
-    chartContainer: {
-        flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', paddingBottom: '20px'
-    },
+    chartContainer: { flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', paddingBottom: '20px' },
     barGroup: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '60px' },
     barValue: { fontSize: '14px', fontWeight: '700', color: '#1e293b' },
-    barBase: {
-        width: '100%', backgroundColor: '#f1f5f9', borderRadius: '8px', 
-        position: 'relative', overflow: 'hidden', height: '150px' 
-    },
-    barFill: {
-        width: '100%', position: 'absolute', bottom: 0, left: 0, borderRadius: '8px',
-        transition: 'height 1s ease-in-out'
-    },
-    barLabel: { fontSize: '13px', fontWeight: '600', color: '#64748b' }
+    barBase: { width: '100%', backgroundColor: '#f1f5f9', borderRadius: '8px', position: 'relative', overflow: 'hidden', height: '150px' },
+    barFill: { width: '100%', position: 'absolute', bottom: 0, left: 0, borderRadius: '8px', transition: 'height 1s ease-in-out' },
+    barLabel: { fontSize: '13px', fontWeight: '600', color: '#64748b' },
+
+    footer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', backgroundColor: '#ffffff', padding: '30px 40px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', marginTop: 'auto', boxSizing: 'border-box' },
+    footerBrand: { display: 'flex', flexDirection: 'column', gap: '5px' },
+    footerBrandTitle: { fontSize: '18px', fontWeight: '700', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' },
+    footerMeta: { fontSize: '12px', color: '#94a3b8', fontWeight: '500' },
+    footerStats: { display: 'flex', gap: '40px' },
+    footerStatItem: { display: 'flex', flexDirection: 'column', gap: '4px' },
+    footerLabel: { fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#94a3b8', fontWeight: '700' },
+    footerValue: { fontSize: '14px', fontWeight: '600', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px' },
+    footerLinks: { display: 'flex', gap: '25px', fontSize: '13px', color: '#64748b', fontWeight: '500' }
   };
 
   return (
     <>
-      <style>
-        {`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');`}
-      </style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');`}</style>
 
       <div style={styles.pageContainer}>
         
-        {/* --- 1. HEADER SECTION --- */}
+        {/* --- HEADER --- */}
         <div style={styles.topRow}>
           <div style={styles.headerContent}>
             <div style={styles.headerIcon}><FaUserShield /></div>
@@ -224,60 +165,55 @@ const PharmacistDashboard = () => {
           </div>
         </div>
 
-        {/* --- 2. CONTENT PANEL --- */}
-        <div style={styles.contentPanel}>
-            
-            {/* STATS ROW (Now with Gradient Colors) */}
-            <div style={styles.statsGrid}>
-                {/* Card 1: Blue Gradient */}
-                <div style={{...styles.statCard, ...styles.cardBlue}}>
-                    <div>
-                        <h3 style={styles.statValue}>{stats.todayScans}</h3>
-                        <span style={styles.statLabel}>Scanned Today</span>
-                    </div>
-                    <div style={styles.statIconBox}>
-                        <FaQrcode />
-                    </div>
+        {/* --- STATS GRID --- */}
+        <div style={styles.statsGrid}>
+            <div style={{...styles.statCard, ...styles.cardBlue}}>
+                <div>
+                    <h3 style={styles.statValue}>{stats.todayScans}</h3>
+                    <span style={styles.statLabel}>Scanned Today</span>
                 </div>
-
-                {/* Card 2: Teal Gradient */}
-                <div style={{...styles.statCard, ...styles.cardTeal}}>
-                    <div>
-                        <h3 style={styles.statValue}>{stats.totalScans}</h3>
-                        <span style={styles.statLabel}>Total Processed</span>
-                    </div>
-                    <div style={styles.statIconBox}>
-                        <FaHistory />
-                    </div>
-                </div>
-
-                {/* Card 3: Purple Gradient */}
-                <div style={{...styles.statCard, ...styles.cardPurple}}>
-                    <div>
-                        <h3 style={styles.statValue}>{stats.pending}</h3>
-                        <span style={styles.statLabel}>Pending Review</span>
-                    </div>
-                    <div style={styles.statIconBox}>
-                        <FaClipboardCheck />
-                    </div>
-                </div>
+                <div style={styles.statIconBox}><FaQrcode /></div>
             </div>
 
-            {/* BOTTOM SPLIT VIEW */}
-            <div style={styles.bottomGrid}>
-                
-                {/* LEFT: STOCK ALERTS */}
-                <div style={styles.dashboardCard}>
-                    <div style={styles.cardHeader}>
-                        <div>
-                            <h3 style={styles.cardTitle}><FaExclamationTriangle style={{color:'#ef4444'}}/> Stock Alerts</h3>
-                            <span style={styles.cardSubtitle}>Lowest quantity items shown first</span>
-                        </div>
+            <div style={{...styles.statCard, ...styles.cardTeal}}>
+                <div>
+                    <h3 style={styles.statValue}>{stats.totalScans}</h3>
+                    <span style={styles.statLabel}>Total Processed</span>
+                </div>
+                <div style={styles.statIconBox}><FaHistory /></div>
+            </div>
+
+            <div style={{...styles.statCard, ...styles.cardPurple}}>
+                <div>
+                    <h3 style={styles.statValue}>{stats.pending}</h3>
+                    <span style={styles.statLabel}>Pending Review</span>
+                </div>
+                <div style={styles.statIconBox}><FaClipboardCheck /></div>
+            </div>
+        </div>
+
+        {/* --- MAIN CONTENT SPLIT --- */}
+        <div style={styles.dashboardContent}>
+            
+            {/* LEFT: STOCK ALERTS (Flex 1.5) - Now connected to API Data */}
+            <div style={{...styles.panel, flex: 1.5}}>
+                <div style={styles.sectionTitle}>
+                    <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+                        <FaExclamationTriangle style={{color:'#ef4444'}}/> Stock Alerts
                     </div>
-                    
-                    <div style={styles.stockList}>
-                        {sortedLowStock.map((item, idx) => {
-                            const status = getStockStatus(item.stock);
+                    <span style={styles.subtitle}>Lowest quantity items</span>
+                </div>
+                
+                <div style={styles.stockList}>
+                    {loadingInventory ? (
+                        <div style={{textAlign:'center', color:'#94a3b8', padding:'20px'}}>Syncing inventory...</div>
+                    ) : sortedLowStock.length === 0 ? (
+                        <div style={{textAlign:'center', color:'#94a3b8', padding:'20px'}}>
+                            Inventory is healthy. No low stock items.
+                        </div>
+                    ) : (
+                        sortedLowStock.map((item, idx) => {
+                            const status = getStockStatus(item);
                             return (
                                 <div key={idx} style={styles.stockItem}>
                                     <div style={{display:'flex', flexDirection:'column', gap:'4px'}}>
@@ -289,48 +225,83 @@ const PharmacistDashboard = () => {
                                     <span style={styles.stockCount}>{item.stock} left</span>
                                 </div>
                             )
-                        })}
-                    </div>
-
-                    <Link to="/inventory" style={styles.viewAllLink}>
-                        Manage Inventory <FaArrowRight />
-                    </Link>
+                        })
+                    )}
                 </div>
 
-                {/* RIGHT: ANALYTICS CHART */}
-                <div style={styles.dashboardCard}>
-                    <div style={styles.cardHeader}>
-                        <div>
-                            <h3 style={styles.cardTitle}><FaChartBar style={{color:'#3b82f6'}}/> Dispensing Analytics</h3>
-                            <span style={styles.cardSubtitle}>Live performance metrics</span>
-                        </div>
-                    </div>
+                <Link to="/pharmacist-dashboard/inventory" style={styles.viewAllLink}>
+                    Manage Inventory <FaArrowRight />
+                </Link>
+            </div>
 
-                    <div style={styles.chartContainer}>
-                        {/* Today Bar */}
-                        <div style={styles.barGroup}>
-                            <span style={styles.barValue}>{chartData.today}</span>
-                            <div style={styles.barBase}>
-                                <div style={{...styles.barFill, height: `${(chartData.today / chartData.max) * 100}%`, backgroundColor: '#3b82f6'}}></div>
-                            </div>
-                            <span style={styles.barLabel}>Today</span>
-                        </div>
-
-                        {/* Average Bar */}
-                        <div style={styles.barGroup}>
-                            <span style={styles.barValue}>{chartData.average}</span>
-                            <div style={styles.barBase}>
-                                <div style={{...styles.barFill, height: `${(chartData.average / chartData.max) * 100}%`, backgroundColor: '#94a3b8'}}></div>
-                            </div>
-                            <span style={styles.barLabel}>Avg</span>
-                        </div>
+            {/* RIGHT: ANALYTICS (Flex 1) */}
+            <div style={{...styles.panel, flex: 1}}>
+                <div style={styles.sectionTitle}>
+                    <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+                        <FaChartBar style={{color:'#3b82f6'}}/> Dispensing Analytics
                     </div>
-                    
-                    <div style={{fontSize:'12px', color:'#94a3b8', textAlign:'center', marginTop:'10px'}}>
-                        Metrics update automatically based on scan activity.
-                    </div>
+                    <span style={styles.subtitle}>Performance Metrics</span>
                 </div>
 
+                <div style={styles.chartContainer}>
+                    <div style={styles.barGroup}>
+                        <span style={styles.barValue}>{chartData.today}</span>
+                        <div style={styles.barBase}>
+                            <div style={{...styles.barFill, height: `${(chartData.today / chartData.max) * 100}%`, backgroundColor: '#3b82f6'}}></div>
+                        </div>
+                        <span style={styles.barLabel}>Today</span>
+                    </div>
+
+                    <div style={styles.barGroup}>
+                        <span style={styles.barValue}>{chartData.average}</span>
+                        <div style={styles.barBase}>
+                            <div style={{...styles.barFill, height: `${(chartData.average / chartData.max) * 100}%`, backgroundColor: '#94a3b8'}}></div>
+                        </div>
+                        <span style={styles.barLabel}>Avg</span>
+                    </div>
+                </div>
+                
+                <div style={{fontSize:'12px', color:'#94a3b8', textAlign:'center', marginTop:'10px'}}>
+                    Metrics update based on real-time scan activity.
+                </div>
+            </div>
+
+        </div>
+
+        {/* --- FOOTER --- */}
+        <div style={styles.footer}>
+            <div style={styles.footerBrand}>
+                <div style={styles.footerBrandTitle}>
+                   <FaShieldAlt style={{color:'#4338ca', fontSize:'22px'}}/> MediSure Vault
+                </div>
+                <div style={styles.footerMeta}>Secure Blockchain EMR System • v2.4.0</div>
+            </div>
+            
+            <div style={styles.footerStats}>
+                <div style={styles.footerStatItem}>
+                    <span style={styles.footerLabel}>System Status</span>
+                    <div style={{...styles.footerValue, color:'#10b981'}}>
+                        <FaCircle style={{fontSize:'8px'}}/> Online
+                    </div>
+                </div>
+                <div style={styles.footerStatItem}>
+                    <span style={styles.footerLabel}>Security Level</span>
+                    <div style={styles.footerValue}>
+                        <FaLock style={{fontSize:'12px', color:'#6366f1'}}/> AES-256 Encrypted
+                    </div>
+                </div>
+                <div style={styles.footerStatItem}>
+                    <span style={styles.footerLabel}>Server Node</span>
+                    <div style={styles.footerValue}>
+                        <FaServer style={{fontSize:'12px', color:'#64748b'}}/> Asia-South-1
+                    </div>
+                </div>
+            </div>
+
+            <div style={styles.footerLinks}>
+                <span style={{cursor:'pointer'}}>Help Center</span>
+                <span style={{cursor:'pointer'}}>Report Issue</span>
+                <span style={{cursor:'pointer'}}>Privacy Policy</span>
             </div>
         </div>
 

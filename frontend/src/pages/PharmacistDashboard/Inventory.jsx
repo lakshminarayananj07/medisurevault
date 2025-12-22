@@ -6,7 +6,7 @@ import {
 } from '../../services/apiService'; 
 import { 
   FaSearch, FaPlus, FaEdit, FaTrash, FaExclamationCircle, 
-  FaBoxOpen, FaClipboardList, FaFilter, FaTimes, FaChevronLeft, FaChevronRight, FaSyncAlt 
+  FaBoxOpen, FaClipboardList, FaFilter, FaTimes, FaChevronLeft, FaChevronRight, FaSyncAlt
 } from 'react-icons/fa';
 
 const Inventory = () => {
@@ -98,126 +98,137 @@ const Inventory = () => {
 
   // --- STYLES ---
   const styles = {
+    // 1. Page Container
     pageContainer: {
-        height: 'calc(100vh - 60px)',
-        width: '99%',
-        maxWidth: '100vw',
+        minHeight: '100vh',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',
         fontFamily: "'Poppins', sans-serif",
-        gap: '10px',
-        overflow: 'hidden'
+        gap: '20px',
+        paddingBottom: '20px'
     },
-    // HEADER
+
+    // 2. Header
     topRow: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        width: '98%',
+        width: '100%',
         backgroundColor: '#ffffff', 
         padding: '20px',            
         borderRadius: '20px', 
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        boxSizing: 'border-box'
     },
-    headerContent: { display: 'flex', alignItems: 'center', gap: '20px' },
+    headerContent: { display: 'flex', alignItems: 'center', gap: '15px' },
     headerIcon: {
-        backgroundColor: '#d1fae5', color: '#059669', padding: '12px', borderRadius: '12px', fontSize: '24px', display: 'flex',
+        backgroundColor: '#d1fae5', color: '#059669', padding: '12px',
+        borderRadius: '12px', fontSize: '24px', display: 'flex',
     },
-    headerTitle: { margin: 0, fontSize: '24px', fontWeight: '700', color: '#1e293b' },
+    headerTitle: { margin: 0, fontSize: '26px', fontWeight: '700', color: '#1e293b' },
     headerSubtitle: { margin: 0, fontSize: '14px', color: '#64748b' },
     alertBadge: {
         display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#fee2e2', color: '#991b1b',
-        padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600'
+        padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: '600'
     },
 
-    // CONTENT PANEL
+    // 3. Stats Grid
+    statsGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '20px',
+        width: '100%'
+    },
+    statCard: {
+        padding: '24px', borderRadius: '20px', display: 'flex', 
+        justifyContent: 'space-between', alignItems: 'center',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', minHeight: '120px'
+    },
+    cardBlue: { background: 'linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)', color: 'white' },
+    cardTeal: { background: 'linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%)', color: 'white' },
+    cardPurple: { background: 'linear-gradient(135deg, #c084fc 0%, #9333ea 100%)', color: 'white' },
+    
+    statValue: { fontSize: '28px', fontWeight: '700', margin: 0 },
+    statLabel: { fontSize: '14px', margin: 0, opacity: 0.9 },
+    statIconBox: {
+        width: '50px', height: '50px', borderRadius: '12px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(5px)',
+    },
+
+    // 4. Content Panel
     contentPanel: {
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
         backgroundColor: '#ffffff',
         borderRadius: '20px',
         border: '1px solid #e2e8f0',
-        padding: '25px',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        padding: '30px',
         boxSizing: 'border-box',
-        gap: '20px',
-        overflow: 'hidden'
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        gap: '20px'
     },
 
-    // STATS ROW
-    statsGrid: { display: 'flex', gap: '20px', marginBottom: '10px' },
-    statCard: {
-        flex: 1, backgroundColor: '#f8fafc', padding: '15px 20px', borderRadius: '12px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: '1px solid #e2e8f0'
-    },
-    statValue: { fontSize: '22px', fontWeight: '700', color: '#1e293b', margin: 0 },
-    statLabel: { fontSize: '13px', color: '#64748b' },
-    iconBox: { width: '40px', height: '40px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' },
-
-    // CONTROLS (Updated for Layout Revert)
+    // Controls Row
     controlsRow: { 
         display: 'flex', 
-        justifyContent: 'space-between', // Pushes Search Left, Actions Right
+        justifyContent: 'space-between', 
         alignItems: 'center',
-        gap: '20px'
+        width: '100%'
     },
     searchBox: { position: 'relative', width: '300px' },
     searchInput: {
-        width: '100%', padding: '10px 10px 10px 35px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none'
+        width: '100%', padding: '12px 12px 12px 40px', borderRadius: '10px', 
+        border: '1px solid #cbd5e1', outline: 'none', fontSize: '14px',
+        boxSizing: 'border-box'
     },
     searchIcon: { position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' },
     actionGroup: { display: 'flex', gap: '10px' },
     
-    // Filter Select
     filterSelect: { 
-        padding: '10px', 
-        borderRadius: '8px', 
-        border: '1px solid #cbd5e1', 
-        outline: 'none', 
-        cursor: 'pointer',
-        whiteSpace: 'nowrap' 
+        padding: '10px 15px', borderRadius: '8px', border: '1px solid #cbd5e1', 
+        outline: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: '500', color: '#475569'
     },
-
-    // Add Button (Broad & Single Line)
     addBtn: {
-        backgroundColor: '#0f172a', 
-        color: 'white', 
-        border: 'none', 
-        padding: '10px 24px', 
-        borderRadius: '8px',
-        fontWeight: '600', 
-        cursor: 'pointer', 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '8px',
-        whiteSpace: 'nowrap' 
+        backgroundColor: '#0f172a', color: 'white', border: 'none', 
+        padding: '10px 20px', borderRadius: '8px', fontWeight: '600', 
+        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px'
     },
 
-    // TABLE
-    tableContainer: { flex: 1, overflowY: 'auto', border: '1px solid #f1f5f9', borderRadius: '12px' },
+    // Table
+    tableContainer: { width: '100%', overflowX: 'auto', border: '1px solid #f1f5f9', borderRadius: '12px' },
     table: { width: '100%', borderCollapse: 'collapse' },
-    th: { textAlign: 'left', padding: '15px', backgroundColor: '#f8fafc', color: '#64748b', fontSize: '13px', fontWeight: '600', position: 'sticky', top: 0 },
-    td: { padding: '15px', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155' },
+    th: { 
+        textAlign: 'left', padding: '16px', backgroundColor: '#f8fafc', 
+        color: '#64748b', fontSize: '12px', fontWeight: '700', 
+        textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9' 
+    },
+    td: { padding: '16px', borderBottom: '1px solid #f1f5f9', fontSize: '14px', color: '#334155', verticalAlign: 'middle' },
     
-    // Action Icons
-    iconBtn: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px', padding: '5px' },
+    iconBtn: { border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px', padding: '5px', transition: 'transform 0.2s' },
 
     // Pagination
     pagination: { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '15px', paddingTop: '10px' },
-    pageBtn: { border: '1px solid #cbd5e1', background: 'white', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer' },
+    pageBtn: { border: '1px solid #cbd5e1', background: 'white', borderRadius: '6px', padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
 
     // Modal
     modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-    modalContent: { backgroundColor: 'white', width: '500px', borderRadius: '16px', padding: '30px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+    modalContent: { backgroundColor: 'white', width: '500px', borderRadius: '16px', padding: '30px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)' },
     modalHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
-    input: { width: '100%', padding: '10px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' },
-    label: { display: 'block', marginBottom: '5px', fontSize: '13px', fontWeight: '600', color: '#475569' }
+    input: { width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box', fontSize: '14px' },
+    label: { display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#475569' }
   };
 
   return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        .icon-btn:hover { transform: scale(1.1); }
+      `}</style>
 
       <div style={styles.pageContainer}>
         
@@ -231,7 +242,7 @@ const Inventory = () => {
             </div>
           </div>
           <div style={{display:'flex', gap:'15px', alignItems:'center'}}>
-             {loading && <span style={{color:'#64748b', fontSize:'14px'}}><FaSyncAlt style={{animation:'spin 1s linear infinite'}}/> Syncing...</span>}
+             {loading && <span style={{color:'#64748b', fontSize:'14px', display:'flex', alignItems:'center', gap:'5px'}}><FaSyncAlt className="spin"/> Syncing...</span>}
              {outOfStockCount > 0 && (
                 <div style={styles.alertBadge}>
                     <FaExclamationCircle /> {outOfStockCount} Items Critical
@@ -240,34 +251,43 @@ const Inventory = () => {
           </div>
         </div>
 
+        {/* --- STATS GRID --- */}
+        <div style={styles.statsGrid}>
+            <div style={{...styles.statCard, ...styles.cardBlue}}>
+                <div>
+                    <h3 style={styles.statValue}>{totalItems}</h3>
+                    <span style={styles.statLabel}>Total Products</span>
+                </div>
+                <div style={styles.statIconBox}><FaBoxOpen /></div>
+            </div>
+
+            <div style={{...styles.statCard, ...styles.cardTeal}}>
+                <div>
+                    <h3 style={styles.statValue}>{lowStockCount}</h3>
+                    <span style={styles.statLabel}>Low Stock</span>
+                </div>
+                <div style={styles.statIconBox}><FaClipboardList /></div>
+            </div>
+
+            <div style={{...styles.statCard, ...styles.cardPurple}}>
+                <div>
+                    <h3 style={styles.statValue}>{outOfStockCount}</h3>
+                    <span style={styles.statLabel}>Out of Stock</span>
+                </div>
+                <div style={styles.statIconBox}><FaExclamationCircle /></div>
+            </div>
+        </div>
+
         {/* --- CONTENT PANEL --- */}
         <div style={styles.contentPanel}>
             
-            {/* 1. Stats Summary */}
-            <div style={styles.statsGrid}>
-                <div style={styles.statCard}>
-                    <div><h3 style={styles.statValue}>{totalItems}</h3><span style={styles.statLabel}>Total Products</span></div>
-                    <div style={{...styles.iconBox, backgroundColor: '#dbeafe', color: '#2563eb'}}><FaBoxOpen /></div>
-                </div>
-                <div style={styles.statCard}>
-                    <div><h3 style={styles.statValue}>{lowStockCount}</h3><span style={styles.statLabel}>Low Stock</span></div>
-                    <div style={{...styles.iconBox, backgroundColor: '#ffedd5', color: '#ea580c'}}><FaClipboardList /></div>
-                </div>
-                <div style={styles.statCard}>
-                    <div><h3 style={styles.statValue}>{outOfStockCount}</h3><span style={styles.statLabel}>Out of Stock</span></div>
-                    <div style={{...styles.iconBox, backgroundColor: '#fee2e2', color: '#ef4444'}}><FaExclamationCircle /></div>
-                </div>
-            </div>
-
-            {/* 2. Controls - Search LEFT, Buttons RIGHT */}
+            {/* Controls */}
             <div style={styles.controlsRow}>
-                {/* Search Box (Left) */}
                 <div style={styles.searchBox}>
                     <FaSearch style={styles.searchIcon} />
                     <input type="text" placeholder="Search medicine..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={styles.searchInput}/>
                 </div>
 
-                {/* Action Buttons (Right) */}
                 <div style={styles.actionGroup}>
                     <select value={filter} onChange={(e) => setFilter(e.target.value)} style={styles.filterSelect}>
                         <option value="all">All Stock</option>
@@ -280,7 +300,7 @@ const Inventory = () => {
                 </div>
             </div>
 
-            {/* 3. Table */}
+            {/* Table */}
             <div style={styles.tableContainer}>
                 <table style={styles.table}>
                     <thead>
@@ -306,8 +326,8 @@ const Inventory = () => {
                                     <td style={styles.td}>{item.batch}</td>
                                     <td style={styles.td}>{item.lowLimit} / {item.highLimit}</td>
                                     <td style={styles.td}>
-                                        <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-                                            <div style={{flex:1, height:'6px', backgroundColor:'#f1f5f9', borderRadius:'3px'}}>
+                                        <div style={{display:'flex', alignItems:'center', gap:'10px', width:'150px'}}>
+                                            <div style={{flex:1, height:'6px', backgroundColor:'#f1f5f9', borderRadius:'3px', overflow:'hidden'}}>
                                                 <div style={{width:`${percentage}%`, height:'100%', backgroundColor: status.color, borderRadius:'3px'}}></div>
                                             </div>
                                             <span style={{fontSize:'12px', fontWeight:'600'}}>{item.stock}</span>
@@ -317,22 +337,25 @@ const Inventory = () => {
                                         <span style={{padding:'4px 10px', borderRadius:'6px', fontSize:'11px', fontWeight:'700', color: status.color, backgroundColor: status.bg}}>{status.label}</span>
                                     </td>
                                     <td style={{...styles.td, textAlign:'right'}}>
-                                        <button style={{...styles.iconBtn, color:'#3b82f6'}} onClick={() => { setEditingItem(item); setShowModal(true); }}><FaEdit /></button>
-                                        <button style={{...styles.iconBtn, color:'#ef4444'}} onClick={() => deleteItem(item._id || item.id)}><FaTrash /></button>
+                                        <button className="icon-btn" style={{...styles.iconBtn, color:'#3b82f6'}} onClick={() => { setEditingItem(item); setShowModal(true); }}><FaEdit /></button>
+                                        <button className="icon-btn" style={{...styles.iconBtn, color:'#ef4444'}} onClick={() => deleteItem(item._id || item.id)}><FaTrash /></button>
                                     </td>
                                 </tr>
                             )
                         })}
+                        {displayedItems.length === 0 && (
+                            <tr><td colSpan="6" style={{textAlign:'center', padding:'40px', color:'#94a3b8'}}>No items found.</td></tr>
+                        )}
                     </tbody>
                 </table>
             </div>
 
-            {/* 4. Pagination */}
+            {/* Pagination */}
             <div style={styles.pagination}>
                 <span style={{fontSize:'13px', color:'#64748b'}}>Page {currentPage} of {totalPages || 1}</span>
                 <div style={{display:'flex', gap:'5px'}}>
-                    <button disabled={currentPage===1} onClick={() => setCurrentPage(p=>p-1)} style={styles.pageBtn}><FaChevronLeft/></button>
-                    <button disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={styles.pageBtn}><FaChevronRight/></button>
+                    <button disabled={currentPage===1} onClick={() => setCurrentPage(p=>p-1)} style={{...styles.pageBtn, opacity: currentPage===1 ? 0.5 : 1}}><FaChevronLeft/></button>
+                    <button disabled={currentPage===totalPages} onClick={() => setCurrentPage(p=>p+1)} style={{...styles.pageBtn, opacity: currentPage===totalPages ? 0.5 : 1}}><FaChevronRight/></button>
                 </div>
             </div>
         </div>
@@ -342,8 +365,8 @@ const Inventory = () => {
             <div style={styles.modalOverlay}>
                 <div style={styles.modalContent}>
                     <div style={styles.modalHeader}>
-                        <h3 style={{margin:0}}>{editingItem.id || editingItem._id ? 'Edit Item' : 'Add New Item'}</h3>
-                        <button onClick={() => setShowModal(false)} style={{border:'none', background:'transparent', fontSize:'18px', cursor:'pointer'}}><FaTimes /></button>
+                        <h3 style={{margin:0, color:'#1e293b'}}>{editingItem.id || editingItem._id ? 'Edit Item' : 'Add New Item'}</h3>
+                        <button onClick={() => setShowModal(false)} style={{border:'none', background:'transparent', fontSize:'18px', cursor:'pointer', color:'#64748b'}}><FaTimes /></button>
                     </div>
                     <form onSubmit={handleSaveItem}>
                         <label style={styles.label}>Name</label>
@@ -374,7 +397,9 @@ const Inventory = () => {
                             </div>
                         </div>
 
-                        <button type="submit" style={{width:'100%', padding:'12px', backgroundColor:'#0f172a', color:'white', border:'none', borderRadius:'8px', fontWeight:'600', cursor:'pointer'}}>Save Item</button>
+                        <button type="submit" style={{width:'100%', padding:'12px', backgroundColor:'#0f172a', color:'white', border:'none', borderRadius:'8px', fontWeight:'600', cursor:'pointer', fontSize:'14px'}}>
+                            Save Item
+                        </button>
                     </form>
                 </div>
             </div>
