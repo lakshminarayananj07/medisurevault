@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios'; // <--- NEW IMPORT FOR API
 import { useAppContext } from '../../hooks/useAppContext';
 import { getDoctorPatientsAPI } from '../../services/apiService';
 import { FaUserMd, FaCalendarAlt, FaPlus, FaTrash, FaFilePrescription, FaSearch, FaStethoscope, FaClock, FaPills } from 'react-icons/fa';
 
 const CreatePrescription = () => {
-    const { currentUser, medicinesDB, createPrescription, diagnoses } = useAppContext();
+    const { currentUser, medicinesDB, diagnoses } = useAppContext(); // Removed createPrescription from context since we use axios now
     
     // --- STATES ---
     const [myPatients, setMyPatients] = useState([]);       
@@ -112,17 +113,32 @@ const CreatePrescription = () => {
         setMedicines(list);
     };
 
+    // =========================================================================
+    //  UPDATED SUBMIT FUNCTION (BLOCKCHAIN INTEGRATION)
+    // =========================================================================
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // 1. Validation
         if (!selectedPatientId) { alert("Please select a patient."); return; }
         if (!validityDate) { alert("Please set a validity date."); return; }
 
         const docId = currentUser.id || currentUser._id;
+        
+        // 2. Generate Unique ID for Blockchain (using Timestamp)
+        const numericId = Date.now(); 
 
+        // 3. Find Patient Name (for the Receipt/Hash)
+        const selectedPatient = myPatients.find(p => p._id === selectedPatientId);
+        const patientName = selectedPatient ? selectedPatient.name : "Unknown";
+
+        // 4. Prepare Data Packet matching Backend Controller
         const prescriptionData = {
+            prescriptionId: numericId, // <--- CRITICAL FOR BLOCKCHAIN
             doctorId: docId,
             doctorName: currentUser.name,
             patientId: selectedPatientId,
+            patientName: patientName,
             date: today,
             validUntil: validityDate,
             diagnosis: diagnosis,
@@ -130,9 +146,19 @@ const CreatePrescription = () => {
         };
         
         try {
-            const result = await createPrescription(prescriptionData);
-            if (result.success) {
-                alert('Prescription created successfully!');
+            console.log("🚀 Sending to Blockchain Backend...", prescriptionData);
+
+            // 5. Send to your new "Dual-Write" Route
+            // Make sure your backend server is running on port 5000
+            const response = await axios.post(
+                "http://localhost:5001/api/prescriptions/issue", 
+                prescriptionData
+            );
+
+            if (response.data.success) {
+                // Success Alert with Blockchain Receipt
+                alert(`✅ Prescription Issued Successfully!\n\nBlockchain Receipt:\n${response.data.receipt}`);
+                
                 // Reset Form
                 setSelectedPatientId('');
                 setSearchTerm('');
@@ -140,10 +166,15 @@ const CreatePrescription = () => {
                 setValidityDate('');
                 setMedicines([{ medicineId: '', type: '', strength: '', quantity: '', frequency: '1-0-1', foodTiming: 'After Food', instructions: '' }]);
             } else {
-                alert(`Error: ${result.message}`);
+                alert(`Error: ${response.data.error || "Unknown error"}`);
             }
-        } catch (error) { console.error("Error", error); }
+
+        } catch (error) {
+            console.error("Error issuing prescription:", error);
+            alert("❌ Failed to issue prescription. Is the backend running?");
+        }
     };
+    // =========================================================================
 
     // --- STYLES (MATCHING PATIENT HISTORY PAGE) ---
     const styles = {

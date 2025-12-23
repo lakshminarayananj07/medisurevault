@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useAppContext } from '../../hooks/useAppContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import QRCode from 'react-qr-code'; // <--- Make sure you ran: npm install react-qr-code
 import { 
   FaFilePrescription, FaQrcode, FaEye, FaCheckCircle, 
   FaTimesCircle, FaUserMd, FaTimes, FaPrint, FaShareAlt, 
@@ -22,6 +23,11 @@ const MyPrescriptions = () => {
   const [doctorSearchTerm, setDoctorSearchTerm] = useState('');
   const [linkedDoctors, setLinkedDoctors] = useState([]); 
   const [loadingDocs, setLoadingDocs] = useState(false);
+
+  // --- QR CODE STATES ---
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrData, setQrData] = useState(''); 
+  const [qrRxDetails, setQrRxDetails] = useState(null);
 
   // --- 1. FETCH LINKED DOCTORS ---
   useEffect(() => {
@@ -99,6 +105,26 @@ const MyPrescriptions = () => {
     setRxToShare(null);
   };
 
+  // --- QR HANDLERS ---
+  const handleQRClick = (prescription) => {
+    // This JSON data is what the Pharmacist scans!
+    const qrPayload = JSON.stringify({
+        id: prescription.prescriptionId,      // The Blockchain ID
+        patient: prescription.patientName,
+        hash: prescription.dataHash || "NoHash", 
+        validUntil: prescription.validUntil
+    });
+
+    setQrData(qrPayload);
+    setQrRxDetails(prescription);
+    setShowQRModal(true);
+  };
+
+  const closeQRModal = () => {
+    setShowQRModal(false);
+    setQrData('');
+  };
+
   const handleSendToDoctor = (doctor) => {
     closeShareModal();
     navigate('/patient-dashboard/doctor-share', {
@@ -111,30 +137,16 @@ const MyPrescriptions = () => {
 
   if (!currentUser) return <div style={{padding:'20px'}}>Loading records...</div>;
 
-  // --- INTERNAL JS STYLES ---
+  // --- STYLES ---
   const styles = {
-    // 1. Page Container
     pageContainer: {
-        minHeight: '100vh',
-        width: '99%',
-        maxWidth: '100vw',
-        display: 'flex',
-        flexDirection: 'column',
-        boxSizing: 'border-box',
-        fontFamily: "'Poppins', sans-serif",
-        gap: '20px',
-        paddingBottom: '20px'
+        minHeight: '100vh', width: '99%', maxWidth: '100vw', display: 'flex',
+        flexDirection: 'column', boxSizing: 'border-box', fontFamily: "'Poppins', sans-serif",
+        gap: '20px', paddingBottom: '20px'
     },
-    // 2. Header
     topRow: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '98%',
-        backgroundColor: '#ffffff', 
-        padding: '20px',            
-        borderRadius: '20px', 
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '98%',
+        backgroundColor: '#ffffff', padding: '20px', borderRadius: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
     },
     headerContent: { display: 'flex', alignItems: 'center', gap: '15px' },
     headerIcon: {
@@ -143,22 +155,11 @@ const MyPrescriptions = () => {
     },
     headerTitle: { margin: 0, fontSize: '26px', fontWeight: '700', color: '#1e293b' },
     headerSubtitle: { margin: 0, fontSize: '14px', color: '#64748b' },
-
-    // 3. Content Panel
     contentPanel: {
-        backgroundColor: '#ffffff',
-        borderRadius: '20px',
-        border: '1px solid #e2e8f0',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        padding: '30px',
-        boxSizing: 'border-box',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+        backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0',
+        flex: 1, display: 'flex', flexDirection: 'column', width: '100%',
+        padding: '30px', boxSizing: 'border-box', boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
     },
-
-    // 4. Table Styles
     tableContainer: { width: '100%', overflowX: 'auto' },
     table: { width: '100%', borderCollapse: 'collapse' },
     th: { 
@@ -168,16 +169,11 @@ const MyPrescriptions = () => {
     td: { 
         padding: '16px', borderBottom: '1px solid #f1f5f9', fontSize: '0.95rem', color: '#334155', verticalAlign: 'middle' 
     },
-    
-    // 5. Badges & Buttons
     badge: { 
         padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', 
         display: 'inline-flex', alignItems: 'center', gap:'5px' 
     },
-    
     actionBtnGroup: { display: 'flex', gap: '8px', alignItems: 'center' },
-    
-    // 6. Modal Overlays
     modalOverlay: {
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center',
@@ -192,26 +188,25 @@ const MyPrescriptions = () => {
         background: '#ffffff', width: '400px', maxWidth: '90%', borderRadius: '12px',
         padding: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.2)', 
         display: 'flex', flexDirection: 'column', fontFamily: "'Poppins', sans-serif"
+    },
+    qrModalContent: {
+        background: '#ffffff', width: '350px', maxWidth: '90%', borderRadius: '20px',
+        padding: '30px', boxShadow: '0 20px 50px rgba(0,0,0,0.2)', 
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        fontFamily: "'Poppins', sans-serif', textAlign: 'center'"
     }
   };
 
   return (
     <>
-      {/* Internal CSS for Hover Effects & Classes */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        /* Button Hover Effects */
         .view-btn { background: #eff6ff; color: #2563eb; border: 1px solid #dbeafe; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; }
         .view-btn:hover { background: #dbeafe; }
-
         .share-btn { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; margin: 0 auto; transition: all 0.2s; }
         .share-btn:hover { background: #7c3aed; color: white; }
-
         .scan-btn { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; }
         .scan-btn:hover { background: #dcfce7; }
-
-        /* Scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -219,8 +214,6 @@ const MyPrescriptions = () => {
       `}</style>
 
       <div style={styles.pageContainer}>
-        
-        {/* HEADER */}
         <div style={styles.topRow}>
             <div style={styles.headerContent}>
                 <div style={styles.headerIcon}><FaFilePrescription /></div>
@@ -231,7 +224,6 @@ const MyPrescriptions = () => {
             </div>
         </div>
 
-        {/* CONTENT PANEL */}
         <div style={styles.contentPanel}>
             <div style={styles.tableContainer}>
                 <table style={styles.table}>
@@ -268,23 +260,28 @@ const MyPrescriptions = () => {
                                                 {isValid ? <><FaCheckCircle/> Valid</> : <><FaTimesCircle/> Expired</>}
                                             </span>
                                         </td>
-                                        <td style={styles.td}>
+                                        <td style={{...styles.td, textAlign:'center'}}>
                                             <button className="share-btn" onClick={() => handleShareClick(p)} title="Share with Doctor">
                                                 <FaShareAlt />
                                             </button>
                                         </td>
+                                        {/* ======================================================== */}
+                                        {/* 👇 HERE IS THE QR CODE BUTTON IN THE TABLE 👇 */}
+                                        {/* ======================================================== */}
                                         <td style={styles.td}>
                                             <div style={styles.actionBtnGroup}>
                                                 <button className="view-btn" onClick={() => handleViewClick(p)}>
                                                     <FaEye /> View
                                                 </button>
+                                                
                                                 {isValid && (
-                                                    <button className="scan-btn">
-                                                        <FaQrcode /> Scan
+                                                    <button className="scan-btn" onClick={() => handleQRClick(p)}>
+                                                        <FaQrcode /> QR Code
                                                     </button>
                                                 )}
                                             </div>
                                         </td>
+                                        {/* ======================================================== */}
                                     </tr>
                                 );
                             })
@@ -300,7 +297,7 @@ const MyPrescriptions = () => {
             </div>
         </div>
 
-        {/* --- VIEW PRESCRIPTION MODAL --- */}
+        {/* --- VIEW MODAL --- */}
         {showModal && selectedRx && (
             <div style={styles.modalOverlay} onClick={closeModal}>
                 <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
@@ -311,7 +308,6 @@ const MyPrescriptions = () => {
                         </div>
                         <button onClick={closeModal} style={{background:'none', border:'none', fontSize:'24px', cursor:'pointer'}}><FaTimes /></button>
                     </div>
-
                     <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'30px', textAlign:'center'}}>
                         <div><strong>Doctor:</strong> <br/> Dr. {selectedRx.doctorId?.name || selectedRx.doctorName}</div>
                         <div><strong>Date:</strong> <br/> {selectedRx.date}</div>
@@ -319,9 +315,8 @@ const MyPrescriptions = () => {
                             <strong>Diagnosis:</strong> {selectedRx.diagnosis}
                         </div>
                     </div>
-
                     <table style={{width:'100%', borderCollapse:'collapse', marginBottom:'30px'}}>
-                        <thead>
+                         <thead>
                             <tr style={{borderBottom:'2px solid black', textAlign:'left'}}>
                                 <th style={{padding:'10px'}}>Medicine</th>
                                 <th style={{padding:'10px'}}>Dosage</th>
@@ -338,13 +333,6 @@ const MyPrescriptions = () => {
                             ))}
                         </tbody>
                     </table>
-
-                    <div style={{display:'flex', justifyContent:'space-between', borderTop:'2px solid black', paddingTop:'20px'}}>
-                        <div>Signed by Dr. {selectedRx.doctorId?.name || selectedRx.doctorName}</div>
-                        <button onClick={() => window.print()} style={{background:'#0f172a', color:'white', border:'none', padding:'10px 20px', borderRadius:'6px', cursor:'pointer', display:'flex', alignItems:'center', gap:'8px'}}>
-                            <FaPrint /> Print
-                        </button>
-                    </div>
                 </div>
             </div>
         )}
@@ -357,11 +345,9 @@ const MyPrescriptions = () => {
                         <h3 style={{margin:0, color:'#1e293b'}}>Share Prescription</h3>
                         <button onClick={closeShareModal} style={{background:'none', border:'none', cursor:'pointer', color:'#64748b'}}><FaTimes /></button>
                     </div>
-                    
                     <p style={{fontSize:'0.9rem', color:'#64748b', marginBottom:'15px'}}>
                         Select a doctor to share your diagnosis of <strong>{rxToShare?.diagnosis}</strong>.
                     </p>
-
                     <div style={{position:'relative', marginBottom:'15px'}}>
                         <FaSearch style={{position:'absolute', left:'10px', top:'50%', transform:'translateY(-50%)', color:'#94a3b8'}}/>
                         <input 
@@ -372,7 +358,6 @@ const MyPrescriptions = () => {
                             style={{width:'100%', padding:'10px 10px 10px 35px', borderRadius:'8px', border:'1px solid #cbd5e1', boxSizing:'border-box', outline:'none'}}
                         />
                     </div>
-
                     <div style={{maxHeight:'300px', overflowY:'auto', borderTop:'1px solid #f1f5f9'}}>
                         {loadingDocs ? (
                             <div style={{padding:'20px', textAlign:'center', color:'#94a3b8'}}>Loading...</div>
@@ -402,6 +387,40 @@ const MyPrescriptions = () => {
             </div>
         )}
 
+        {/* --- QR CODE DISPLAY MODAL --- */}
+        {showQRModal && (
+            <div style={styles.modalOverlay} onClick={closeQRModal}>
+                <div style={styles.qrModalContent} onClick={e => e.stopPropagation()}>
+                    <div style={{display:'flex', justifyContent:'space-between', width:'100%', marginBottom:'20px'}}>
+                        <h3 style={{margin:0, color:'#1e293b'}}>Scan Verification</h3>
+                        <button onClick={closeQRModal} style={{background:'none', border:'none', cursor:'pointer', fontSize:'18px'}}><FaTimes /></button>
+                    </div>
+
+                    <div style={{background:'#fff', padding:'15px', borderRadius:'10px', border:'2px solid #e2e8f0'}}>
+                        {/* THE QR IMAGE GENERATOR */}
+                        <QRCode value={qrData} size={200} />
+                    </div>
+
+                    <div style={{marginTop:'20px', color:'#64748b', fontSize:'0.9rem', textAlign:'center'}}>
+                        <p style={{margin:0}}>Show this QR code to the pharmacist.</p>
+                        <p style={{margin:'5px 0 0 0', fontWeight:'600', color:'#334155'}}>
+                            ID: #{qrRxDetails?.prescriptionId || '---'}
+                        </p>
+                    </div>
+
+                    <button 
+                        onClick={closeQRModal}
+                        style={{
+                            marginTop:'25px', width:'100%', padding:'12px', 
+                            background:'#1e293b', color:'white', border:'none', 
+                            borderRadius:'10px', cursor:'pointer', fontWeight:'600'
+                        }}
+                    >
+                        Done
+                    </button>
+                </div>
+            </div>
+        )}
       </div>
     </>
   );

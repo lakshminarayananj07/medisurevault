@@ -14,21 +14,31 @@ app.use(express.json()); // Allows server to accept JSON data
 
 // --- 3. IMPORT ROUTES ---
 const authRoutes = require('./routes/auth');
-const prescriptionRoutes = require('./routes/prescriptions');
 const reminderRoutes = require('./routes/reminders');
 const messageRoutes = require('./routes/messages');
 const inventoryRoutes = require('./routes/inventoryroutes'); 
-// Assuming 'api.js' is a general router, keeping it as requested
 const apiRoutes = require('./routes/api'); 
+
+// === PRESCRIPTION ROUTES ===
+// 1. The Old Route (Likely handles "Viewing/Fetching" history)
+const standardPrescriptionRoutes = require('./routes/prescriptions');
+
+// 2. The New Blockchain Route (Handles "Issuing" new ones)
+const blockchainPrescriptionRoutes = require("./routes/prescriptionRoutes");
+
 
 // --- 4. REGISTER ROUTES ---
 app.use('/api/auth', authRoutes);
-app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/messages', messageRoutes); 
 app.use('/api/inventory', inventoryRoutes);
 
-// General API router (ensure this doesn't conflict with specific routes above)
+// Register BOTH prescription files to the same URL path
+// Express checks them in order. If it doesn't find the route in the first one, it checks the second.
+app.use('/api/prescriptions', standardPrescriptionRoutes);
+app.use('/api/prescriptions', blockchainPrescriptionRoutes);
+
+// General API router 
 app.use('/api', apiRoutes); 
 
 // --- 5. ROOT ROUTE (Health Check) ---
