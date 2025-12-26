@@ -34,27 +34,28 @@ const PrescriptionSchema = new Schema({
   // =========================================================
   
   // 1. Identification & Security
-  prescriptionId: { type: Number, required: true, unique: true }, // Numeric ID for Smart Contract
-  dataHash: { type: String, required: true },     // The "Digital Fingerprint"
-  transactionHash: { type: String },              // The Blockchain Receipt
+  prescriptionId: { type: Number, required: true, unique: true }, 
+  dataHash: { type: String, required: true },     
+  transactionHash: { type: String },              
   
-  // 2. Dispensing Status (CRITICAL FOR HISTORY)
+  // 2. Dispensing Status
   isDispensed: { 
     type: Boolean, 
     default: false 
   },
   
-  // 3. Dispensing Metadata (Added this so History works correctly)
+  // 3. Dispensing Metadata
   dispenseDate: { 
     type: Date 
   },
   pharmacistNote: { 
     type: String 
   },
+  
+  // 👇 UPDATED FIELD: Changed from ObjectId to String 👇
   dispensedBy: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', // Assuming your Pharmacist is a "User"
-      required: false // False initially so old records don't break
+      type: String,  // <--- This allows "pharm_..." IDs
+      required: false 
   }
   // =========================================================
 

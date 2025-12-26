@@ -2,11 +2,11 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useAppContext } from '../../hooks/useAppContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import QRCode from 'react-qr-code'; // <--- Make sure you ran: npm install react-qr-code
+import QRCode from 'react-qr-code'; 
 import { 
   FaFilePrescription, FaQrcode, FaEye, FaCheckCircle, 
   FaTimesCircle, FaUserMd, FaTimes, FaPrint, FaShareAlt, 
-  FaSearch, FaPaperPlane 
+  FaSearch, FaPaperPlane, FaChevronLeft, FaChevronRight
 } from 'react-icons/fa';
 
 const MyPrescriptions = () => {
@@ -16,6 +16,10 @@ const MyPrescriptions = () => {
   // --- STATES ---
   const [selectedRx, setSelectedRx] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   // Sharing States
   const [showShareModal, setShowShareModal] = useState(false);
@@ -58,27 +62,49 @@ const MyPrescriptions = () => {
     (doc.hospitalName || '').toLowerCase().includes(doctorSearchTerm.toLowerCase())
   );
 
-  // Filter Prescriptions
-  const recentList = useMemo(() => {
+  // --- 2. FILTER & SORT PRESCRIPTIONS (Newest First) ---
+  const sortedList = useMemo(() => {
     if (!currentUser) return [];
     const safeList = Array.isArray(prescriptions) ? prescriptions : [];
+    
+    // Filter for current user
     const myRx = safeList.filter(p => 
       String(p.patientId) === String(currentUser.id || currentUser._id)
     );
-    return myRx.reverse(); 
+
+    // Sort: Newest to Oldest
+    // Assuming 'date' is stored as YYYY-MM-DD or ISO string. 
+    // If simply reversing DB order works for you, .reverse() is fine.
+    // For safer sorting by date:
+    return myRx.sort((a, b) => new Date(b.date) - new Date(a.date)); 
   }, [prescriptions, currentUser]);
 
-  // Helpers
+  // --- 3. PAGINATION LOGIC ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedList.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedList.length / itemsPerPage);
+
+  const handleNextPage = () => {
+      if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+  };
+
+  const handlePrevPage = () => {
+      if (currentPage > 1) setCurrentPage(prev => prev - 1);
+  };
+
+  // --- 4. VALIDITY LOGIC ---
   const checkValidity = (validUntilDate) => {
-    if (!validUntilDate) return false;
+    if (!validUntilDate) return false; 
     const today = new Date();
-    const expiry = new Date(validUntilDate);
     today.setHours(0,0,0,0);
+    const expiry = new Date(validUntilDate);
     expiry.setHours(0,0,0,0);
     return expiry >= today;
   };
 
   const getMedicineName = (id) => {
+    if (!medicinesDB || !Array.isArray(medicinesDB)) return id;
     const found = medicinesDB.find(m => m.id === id);
     return found ? found.name : id; 
   };
@@ -107,9 +133,8 @@ const MyPrescriptions = () => {
 
   // --- QR HANDLERS ---
   const handleQRClick = (prescription) => {
-    // This JSON data is what the Pharmacist scans!
     const qrPayload = JSON.stringify({
-        id: prescription.prescriptionId,      // The Blockchain ID
+        id: prescription.prescriptionId,      
         patient: prescription.patientName,
         hash: prescription.dataHash || "NoHash", 
         validUntil: prescription.validUntil
@@ -133,6 +158,13 @@ const MyPrescriptions = () => {
         sharedPrescription: rxToShare
       }
     });
+  };
+
+  const getDocName = (rx) => {
+      if (rx?.doctorId && typeof rx.doctorId === 'object') {
+          return rx.doctorId.name || "Unknown Doctor";
+      }
+      return rx?.doctorName || "Unknown Doctor";
   };
 
   if (!currentUser) return <div style={{padding:'20px'}}>Loading records...</div>;
@@ -174,6 +206,13 @@ const MyPrescriptions = () => {
         display: 'inline-flex', alignItems: 'center', gap:'5px' 
     },
     actionBtnGroup: { display: 'flex', gap: '8px', alignItems: 'center' },
+    
+    // Pagination Styles
+    paginationContainer: { display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '15px', marginTop: '20px', paddingRight: '10px' },
+    pageBtn: { background: '#f1f5f9', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#475569', transition: '0.2s' },
+    pageBtnDisabled: { opacity: 0.5, cursor: 'not-allowed' },
+    pageInfo: { fontSize: '0.9rem', color: '#64748b', fontWeight: '500' },
+
     modalOverlay: {
         position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center',
@@ -207,6 +246,7 @@ const MyPrescriptions = () => {
         .share-btn:hover { background: #7c3aed; color: white; }
         .scan-btn { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.8rem; transition: all 0.2s; }
         .scan-btn:hover { background: #dcfce7; }
+        .scan-btn-disabled { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; cursor: not-allowed; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -233,17 +273,18 @@ const MyPrescriptions = () => {
                             <th style={styles.th}>Doctor Name</th>
                             <th style={styles.th}>Diagnosis</th>
                             <th style={styles.th}>Validity Status</th>
+                            <th style={{...styles.th, textAlign:'center'}}>QR</th> {/* NEW COLUMN */}
                             <th style={{...styles.th, textAlign:'center'}}>Share</th>
                             <th style={styles.th}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {recentList.length > 0 ? (
-                            recentList.map((p, index) => {
+                        {currentItems.length > 0 ? (
+                            currentItems.map((p, index) => {
                                 const isValid = checkValidity(p.validUntil);
-                                const docName = p.doctorId?.name || p.doctorName || "Unknown";
+                                const docName = getDocName(p);
                                 return (
-                                    <tr key={p.id || index}>
+                                    <tr key={p.id || p.prescriptionId || index}>
                                         <td style={styles.td}>{p.date}</td>
                                         <td style={styles.td}>
                                             <div style={{display:'flex', alignItems:'center', gap:'8px', fontWeight:'500'}}>
@@ -259,35 +300,41 @@ const MyPrescriptions = () => {
                                             }}>
                                                 {isValid ? <><FaCheckCircle/> Valid</> : <><FaTimesCircle/> Expired</>}
                                             </span>
+                                            <div style={{fontSize:'0.7rem', color:'#64748b', marginTop:'4px'}}>
+                                                Until: {p.validUntil || "N/A"}
+                                            </div>
                                         </td>
+                                        
+                                        {/* --- NEW QR COLUMN --- */}
+                                        <td style={{...styles.td, textAlign:'center'}}>
+                                            {isValid ? (
+                                                <button className="scan-btn" onClick={() => handleQRClick(p)} style={{margin:'0 auto'}}>
+                                                    <FaQrcode /> QR
+                                                </button>
+                                            ) : (
+                                                <div style={{fontSize:'0.75rem', color:'#94a3b8', fontStyle:'italic'}}>Expired</div>
+                                            )}
+                                        </td>
+
+                                        {/* --- SHARE COLUMN --- */}
                                         <td style={{...styles.td, textAlign:'center'}}>
                                             <button className="share-btn" onClick={() => handleShareClick(p)} title="Share with Doctor">
                                                 <FaShareAlt />
                                             </button>
                                         </td>
-                                        {/* ======================================================== */}
-                                        {/* 👇 HERE IS THE QR CODE BUTTON IN THE TABLE 👇 */}
-                                        {/* ======================================================== */}
+
+                                        {/* --- ACTIONS COLUMN (Now only has View) --- */}
                                         <td style={styles.td}>
-                                            <div style={styles.actionBtnGroup}>
-                                                <button className="view-btn" onClick={() => handleViewClick(p)}>
-                                                    <FaEye /> View
-                                                </button>
-                                                
-                                                {isValid && (
-                                                    <button className="scan-btn" onClick={() => handleQRClick(p)}>
-                                                        <FaQrcode /> QR Code
-                                                    </button>
-                                                )}
-                                            </div>
+                                            <button className="view-btn" onClick={() => handleViewClick(p)}>
+                                                <FaEye /> View
+                                            </button>
                                         </td>
-                                        {/* ======================================================== */}
                                     </tr>
                                 );
                             })
                         ) : (
                             <tr>
-                                <td colSpan="6" style={{...styles.td, textAlign:'center', color:'#94a3b8', padding:'40px'}}>
+                                <td colSpan="7" style={{...styles.td, textAlign:'center', color:'#94a3b8', padding:'40px'}}>
                                     No records found.
                                 </td>
                             </tr>
@@ -295,6 +342,29 @@ const MyPrescriptions = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* --- PAGINATION CONTROLS --- */}
+            {sortedList.length > itemsPerPage && (
+                <div style={styles.paginationContainer}>
+                    <button 
+                        style={{...styles.pageBtn, ...(currentPage === 1 ? styles.pageBtnDisabled : {})}} 
+                        onClick={handlePrevPage} 
+                        disabled={currentPage === 1}
+                    >
+                        <FaChevronLeft /> Prev
+                    </button>
+                    <span style={styles.pageInfo}>
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button 
+                        style={{...styles.pageBtn, ...(currentPage === totalPages ? styles.pageBtnDisabled : {})}} 
+                        onClick={handleNextPage} 
+                        disabled={currentPage === totalPages}
+                    >
+                        Next <FaChevronRight />
+                    </button>
+                </div>
+            )}
         </div>
 
         {/* --- VIEW MODAL --- */}
@@ -303,36 +373,53 @@ const MyPrescriptions = () => {
                 <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
                     <div style={{display:'flex', justifyContent:'space-between', borderBottom:'3px solid black', paddingBottom:'20px', marginBottom:'30px'}}>
                         <div>
-                            <h2 style={{margin:0, fontSize:'28px'}}>MediSure<span style={{color:'#3b82f6'}}>Rx</span></h2>
-                            <p style={{margin:0, color:'#666'}}>Secure Digital Prescription</p>
+                            <h2 style={{margin:0, fontSize:'28px'}}>Dr. {getDocName(selectedRx)}</h2>
+                            <p style={{margin:0, color:'#666'}}>{selectedRx.hospitalName || "MediSure Hospital"}</p>
                         </div>
-                        <button onClick={closeModal} style={{background:'none', border:'none', fontSize:'24px', cursor:'pointer'}}><FaTimes /></button>
-                    </div>
-                    <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'30px', textAlign:'center'}}>
-                        <div><strong>Doctor:</strong> <br/> Dr. {selectedRx.doctorId?.name || selectedRx.doctorName}</div>
-                        <div><strong>Date:</strong> <br/> {selectedRx.date}</div>
-                        <div style={{gridColumn:'1/-1', background:'#f0f4f8', padding:'10px', borderRadius:'8px'}}>
-                            <strong>Diagnosis:</strong> {selectedRx.diagnosis}
+                        <div style={{textAlign:'right'}}>
+                            <div style={{fontWeight:'bold'}}>DATE: {selectedRx.date}</div>
+                            <div style={{fontWeight:'bold'}}>VALID UNTIL: {selectedRx.validUntil || "N/A"}</div>
+                            <button onClick={closeModal} style={{background:'none', border:'none', fontSize:'24px', cursor:'pointer', marginTop:'10px'}}><FaTimes /></button>
                         </div>
                     </div>
-                    <table style={{width:'100%', borderCollapse:'collapse', marginBottom:'30px'}}>
+                    
+                    <div style={{borderBottom:'2px solid black', paddingBottom:'20px', marginBottom:'30px'}}>
+                        <div style={{fontSize:'0.85rem', color:'#666', marginBottom:'5px', fontWeight:'bold', textTransform:'uppercase'}}>Diagnosis:</div>
+                        <div style={{fontSize:'1.1rem'}}>{selectedRx.diagnosis || "No Diagnosis"}</div>
+                    </div>
+
+                    <h3 style={{textAlign:'center', textDecoration:'underline', marginBottom:'20px'}}>Rx (Prescribed Medications)</h3>
+
+                    <table style={{width:'100%', borderCollapse:'collapse', marginBottom:'50px'}}>
                          <thead>
                             <tr style={{borderBottom:'2px solid black', textAlign:'left'}}>
-                                <th style={{padding:'10px'}}>Medicine</th>
-                                <th style={{padding:'10px'}}>Dosage</th>
-                                <th style={{padding:'10px'}}>Instructions</th>
+                                <th style={{padding:'10px'}}>MEDICINE</th>
+                                <th style={{padding:'10px'}}>QTY</th>
+                                <th style={{padding:'10px', textAlign:'right'}}>FREQUENCY</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {selectedRx.medicines && selectedRx.medicines.map((med, idx) => (
-                                <tr key={idx} style={{borderBottom:'1px solid #ddd'}}>
-                                    <td style={{padding:'10px'}}><strong>{getMedicineName(med.medicineId)}</strong><br/><small>{med.type}</small></td>
-                                    <td style={{padding:'10px'}}>{med.quantity}<br/><small>{med.frequency}</small></td>
-                                    <td style={{padding:'10px'}}>{med.instructions || '-'}</td>
+                            {(selectedRx.medicines || []).map((med, idx) => (
+                                <tr key={idx} style={{borderBottom:'1px solid #eee'}}>
+                                    <td style={{padding:'15px 10px'}}>
+                                        <div style={{fontWeight:'bold'}}>{getMedicineName(med.medicineId)}</div>
+                                        <div style={{fontSize:'0.85rem', color:'#666'}}>{med.type}</div>
+                                    </td>
+                                    <td style={{padding:'15px 10px'}}>{med.quantity}</td>
+                                    <td style={{padding:'15px 10px', textAlign:'right'}}>{med.frequency}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+
+                    <div style={{marginTop:'50px', display:'flex', justifyContent:'space-between', alignItems:'flex-end'}}>
+                        <div style={{borderTop:'1px dashed black', paddingTop:'5px', width:'200px', textAlign:'center', fontSize:'0.9rem'}}>
+                            Doctor's Signature
+                        </div>
+                        <button style={{background:'black', color:'white', border:'none', padding:'10px 20px', cursor:'pointer', display:'flex', alignItems:'center', gap:'5px'}}>
+                            <FaPrint /> Print
+                        </button>
+                    </div>
                 </div>
             </div>
         )}
@@ -397,7 +484,6 @@ const MyPrescriptions = () => {
                     </div>
 
                     <div style={{background:'#fff', padding:'15px', borderRadius:'10px', border:'2px solid #e2e8f0'}}>
-                        {/* THE QR IMAGE GENERATOR */}
                         <QRCode value={qrData} size={200} />
                     </div>
 

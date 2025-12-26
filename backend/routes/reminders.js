@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Reminder = require('../models/Reminder');
-const auth = require('../middleware/authMiddleware');
+const auth = require('../Middleware/authMiddleware');
 
 // Add a reminder
 router.post('/add', auth, async (req, res) => {

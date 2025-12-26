@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useAppContext } from '../../hooks/useAppContext';
 import { 
   FaArrowLeft, FaCheckCircle, FaQrcode, FaExclamationTriangle, 
-  FaHistory, FaBoxOpen, FaClock, FaSpinner, FaUserMd, FaHospital, FaCalendarAlt, FaSync
+  FaHistory, FaBoxOpen, FaClock, FaSpinner, FaUserMd, FaHospital, FaCalendarAlt, FaSync, FaIdCard
 } from 'react-icons/fa';
 
 const ScanQR = () => {
@@ -13,42 +13,50 @@ const ScanQR = () => {
   const [foundPrescription, setFoundPrescription] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // HISTORY STATE
   const [sessionHistory, setSessionHistory] = useState([]);
+  
+  // REAL IDENTITY STATE (Replaces the random ID)
+  const [pharmacistIdentity, setPharmacistIdentity] = useState(null);
 
   const { prescriptions, medicinesDB } = useAppContext();
   const navigate = useNavigate();
 
-  // --- HELPER: USER ID FINDER ---
-  const getUserId = () => {
+  // --- 1. IDENTIFY THE PHARMACIST (From Local Storage) ---
+  useEffect(() => {
       try {
           const userStr = localStorage.getItem('user');
-          if (!userStr) return null; // Not logged in
-
-          const user = JSON.parse(userStr);
-          // Check common locations for ID
-          return user.id || user._id || (user.data && user.data.id) || null;
+          if (userStr) {
+              const user = JSON.parse(userStr);
+              
+              // PRIORITY: Use Username (e.g., "kavin_n") as the ID if available
+              // If not, fall back to the database _id
+              const identity = user.username || user.id || user._id;
+              
+              if (identity) {
+                  setPharmacistIdentity(identity);
+                  console.log("✅ Identity Verified:", identity);
+              }
+          }
       } catch (e) {
-          return null;
+          console.error("Login Data Error:", e);
       }
-  };
+  }, []);
 
-  // --- 1. FETCH HISTORY ---
+  // --- 2. FETCH HISTORY (Based on Account) ---
   const fetchHistory = async () => {
+    if (!pharmacistIdentity) return; 
+
     try {
-      const pharmacistId = getUserId();
-      // Send ID if we have it, otherwise send blank (Backend now handles this!)
-      const { data } = await axios.get(`http://localhost:5001/api/prescriptions/dispense-history?pharmacistId=${pharmacistId || ''}`);
+      // Fetch history specific to this logged-in account
+      const { data } = await axios.get(`http://localhost:5001/api/prescriptions/dispense-history?pharmacistId=${pharmacistIdentity}`);
       
       if (data.success && Array.isArray(data.data)) {
         const formattedHistory = data.data.map(item => {
             const rawDate = item.dispenseDate || item.updatedAt || new Date();
             const dateObj = new Date(rawDate);
-
             return {
                 id: item.prescriptionId || item._id, 
-                patient: item.patientName || "Unknown Patient",
+                patient: item.patientName || "Unknown",
                 date: !isNaN(dateObj) ? dateObj.toLocaleDateString() : "N/A",
                 time: !isNaN(dateObj) ? dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A",
                 itemCount: item.medicines ? item.medicines.length : 0
@@ -56,53 +64,50 @@ const ScanQR = () => {
         });
         setSessionHistory(formattedHistory);
       }
-    } catch (error) {
-      console.error("History Error:", error);
+    } catch (error) { 
+        console.error("History Error:", error); 
     }
   };
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
+  // Fetch history immediately when identity is confirmed
+  useEffect(() => { 
+      if(pharmacistIdentity) fetchHistory(); 
+  }, [pharmacistIdentity]);
 
-  // --- 2. SCANNER ---
+  // --- 3. SCANNER SETUP ---
   useEffect(() => {
     if (!foundPrescription) { 
       const element = document.getElementById('qr-reader');
       if (element) element.innerHTML = "";
-
-      const scanner = new Html5QrcodeScanner('qr-reader', {
-        qrbox: { width: 250, height: 250 },
-        fps: 10,
-        aspectRatio: 1.0,
-        showTorchButtonIfSupported: true
+      
+      const scanner = new Html5QrcodeScanner('qr-reader', { 
+          qrbox: { width: 250, height: 250 }, 
+          fps: 10, 
+          aspectRatio: 1.0, 
+          showTorchButtonIfSupported: true 
       });
-
-      const onScanSuccess = (decodedText) => {
+      
+      scanner.render((decodedText) => {
         setScanResult(decodedText);
         scanner.clear();
-      };
-
-      scanner.render(onScanSuccess, (err) => console.warn(err));
-
-      return () => {
-        scanner.clear().catch(err => console.error("Scanner cleanup", err));
-      };
+      }, (err) => console.warn(err));
+      
+      return () => scanner.clear().catch(err => console.error("Scanner cleanup", err));
     }
   }, [foundPrescription]);
 
-  // --- 3. PROCESS SCAN ---
+  // --- 4. PROCESS SCAN ---
   useEffect(() => {
     if (scanResult) {
       setErrorMsg('');
-      const fetchPrescriptionDetails = async () => {
+      const fetchRx = async () => {
         try {
             const parsedData = JSON.parse(scanResult);
-            const rxIdToCheck = parsedData.id || parsedData.prescriptionId;
+            const rxId = parsedData.id || parsedData.prescriptionId;
             
-            // Try Local Context
-            const localRx = prescriptions.find(p => String(p.prescriptionId) === String(rxIdToCheck));
-
+            // Try Local Context first
+            const localRx = prescriptions.find(p => String(p.prescriptionId) === String(rxId));
+            
             if (localRx) {
                 const detailedMedicines = localRx.medicines.map(med => {
                     const dbInfo = medicinesDB?.find(m => m.id === med.medicineId);
@@ -120,9 +125,9 @@ const ScanQR = () => {
                 // Try Backend
                 setLoading(true);
                 try {
-                    const { data } = await axios.get(`http://localhost:5001/api/prescriptions/find/${rxIdToCheck}`);
+                    const { data } = await axios.get(`http://localhost:5001/api/prescriptions/find/${rxId}`);
                     
-                    if (data.success && data.data) {
+                    if (data.success) {
                         const apiRx = data.data;
                         const detailedMedicines = apiRx.medicines.map(med => {
                             const dbInfo = medicinesDB?.find(m => m.id === med.medicineId);
@@ -130,69 +135,65 @@ const ScanQR = () => {
                         });
                         const issueDate = new Date(apiRx.date || Date.now());
                         issueDate.setFullYear(issueDate.getFullYear() + 1);
-
+                        
                         setFoundPrescription({ 
                             ...apiRx, 
                             medicines: detailedMedicines,
-                            validationDate: apiRx.validationDate || issueDate.toISOString().split('T')[0]
+                            validationDate: apiRx.validationDate || issueDate.toISOString().split('T')[0] 
                         });
-                    } else {
-                        throw new Error("Prescription not found in Database.");
-                    }
-                } catch (apiError) {
-                    console.error("API Fetch Error:", apiError);
-                    const fallbackDate = new Date();
-                    fallbackDate.setFullYear(fallbackDate.getFullYear() + 1);
-                    setFoundPrescription({
-                        prescriptionId: rxIdToCheck,
-                        patientName: parsedData.patient || "Unknown",
-                        doctorName: "Unknown",
-                        diagnosis: "Data not available",
-                        date: new Date().toLocaleDateString('en-CA'),
-                        validationDate: fallbackDate.toISOString().split('T')[0],
-                        medicines: [] 
-                    });
-                } finally {
-                    setLoading(false);
-                }
+                    } else throw new Error("Not Found");
+                // eslint-disable-next-line no-unused-vars
+                } catch (e) {
+                     // Fallback Logic
+                     const nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear() + 1);
+                     setFoundPrescription({ 
+                         prescriptionId: rxId, 
+                         patientName: parsedData.patient || "Unknown", 
+                         doctorName: "Unknown", 
+                         diagnosis: "Data Offline", 
+                         date: new Date().toLocaleDateString(), 
+                         validationDate: nextYear.toISOString().split('T')[0], 
+                         medicines: [] 
+                     });
+                } finally { setLoading(false); }
             }
-        } catch (err) {
-            setErrorMsg('Invalid QR Code format.');
-            setScanResult(null);
+        // eslint-disable-next-line no-unused-vars
+        } catch (e) { 
+            setErrorMsg('Invalid QR Code'); 
+            setScanResult(null); 
         }
       };
-      fetchPrescriptionDetails();
+      fetchRx();
     }
-  }, [scanResult, prescriptions, medicinesDB]);
+  }, [scanResult]); 
 
-  // --- 4. DISPENSE ---
+  // --- 5. DISPENSE ---
   const handleDispense = async () => {
     if (!foundPrescription) return;
+
+    // GUARD: Ensure user is logged in
+    if (!pharmacistIdentity) {
+        alert("❌ Error: You are not logged in! Please go back to the Login page.");
+        return;
+    }
+
     setLoading(true);
     
     try {
-        const pharmacistId = getUserId();
-        // If ID is missing, we send 'null', but Backend will now handle it gracefully
-        
-        const response = await axios.post("http://localhost:5001/api/prescriptions/dispense", {
+        const res = await axios.post("http://localhost:5001/api/prescriptions/dispense", {
             prescriptionId: foundPrescription.prescriptionId,
             pharmacistNote: "Dispensed via Scanner",
-            pharmacistId: pharmacistId 
+            pharmacistId: pharmacistIdentity // 👈 Sends the Real Username/ID
         });
 
-        if (response.data.success) {
-            alert(`✅ Success! Medicine Dispensed.`);
-            setTimeout(async () => {
-                await fetchHistory();
-            }, 500);
+        if (res.data.success) {
+            alert("✅ Success! Medicine Dispensed.");
+            setTimeout(fetchHistory, 500); 
             handleReset();
         }
-    } catch (error) {
-        console.error("Dispense Error:", error);
-        alert(`❌ Dispense Failed: ${error.response?.data?.error || error.message}`);
-    } finally {
-        setLoading(false);
-    }
+    } catch (err) {
+        alert("❌ Error: " + (err.response?.data?.error || err.message));
+    } finally { setLoading(false); }
   };
 
   const handleReset = () => {
@@ -201,7 +202,7 @@ const ScanQR = () => {
     setErrorMsg('');
   };
 
-  // --- STYLES (Unchanged) ---
+  // --- STYLES ---
   const styles = {
     pageContainer: { minHeight: '100vh', width: '100%', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', fontFamily: "'Poppins', sans-serif", gap: '20px', paddingBottom: '20px' },
     topRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', backgroundColor: '#ffffff', padding: '20px', borderRadius: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' },
@@ -211,8 +212,8 @@ const ScanQR = () => {
     headerSubtitle: { margin: 0, fontSize: '14px', color: '#64748b' },
     backBtn: { display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: '1px solid #cbd5e1', padding: '8px 16px', borderRadius: '8px', color: '#475569', cursor: 'pointer', fontWeight: '500' },
     mainLayout: { display: 'flex', gap: '20px', width: '100%', flex: 1 },
-    scanPanel: { flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', padding: '30px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', position: 'relative' },
-    historyPanel: { flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', padding: '25px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', maxWidth: '400px' },
+    scanPanel: { flex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', padding: '30px', position: 'relative' },
+    historyPanel: { flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff', borderRadius: '20px', border: '1px solid #e2e8f0', padding: '25px', maxWidth: '400px' },
     card: { width: '100%', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '25px', backgroundColor: '#fff', marginBottom: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' },
     cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #f1f5f9', paddingBottom: '15px', marginBottom: '15px' },
     docName: { margin: 0, fontSize: '18px', fontWeight: '700', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '8px' },
@@ -262,8 +263,7 @@ const ScanQR = () => {
               <p style={styles.headerSubtitle}>Scan patient QR code to dispense</p>
             </div>
           </div>
-          {/* Force Dashboard Refresh on Back */}
-          <button style={styles.backBtn} onClick={() => window.location.href = '/dashboard'}>
+          <button style={styles.backBtn} onClick={() => navigate('/dashboard')}>
              <FaArrowLeft /> Back
           </button>
         </div>
@@ -365,23 +365,27 @@ const ScanQR = () => {
             <div style={styles.historyPanel}>
                 <div style={styles.historyTitle}>
                     <div style={{display:'flex', alignItems:'center'}}>
-                        <FaHistory style={{color:'#6366f1', marginRight:'8px'}}/> Session History
+                        <FaHistory style={{color:'#6366f1', marginRight:'8px'}}/> Your History
                     </div>
                     <button onClick={fetchHistory} style={{background:'none', border:'none', cursor:'pointer', color:'#6366f1'}} title="Refresh History">
                         <FaSync />
                     </button>
                 </div>
+                
+                {/* SHOW REAL IDENTITY */}
+                <div style={{fontSize:'11px', color:'#64748b', background:'#f1f5f9', padding:'8px', borderRadius:'6px', marginBottom:'15px', wordBreak:'break-all'}}>
+                    <FaIdCard style={{marginRight:'5px'}}/> 
+                    <strong>Account:</strong> {pharmacistIdentity || "Please Log In"}
+                </div>
+
                 <div style={styles.historyList}>
                     {sessionHistory.length === 0 ? (
                         <div style={styles.emptyHistory}>
                             <FaBoxOpen style={{fontSize:'32px', marginBottom:'10px', opacity:0.5}}/><br/>
-                            No items dispensed yet.<br/>
-                            <span style={{fontSize:'12px', color:'#94a3b8', marginTop:'5px', display:'block'}}>
-                                Note: Scanned items must be <strong>unique</strong> to appear as separate entries.
-                            </span>
+                            {pharmacistIdentity ? "No history found for this account." : "Log in to see your history."}<br/>
                         </div>
                     ) : (
-                        sessionHistory.slice(0, 5).map((item, idx) => (
+                        sessionHistory.map((item, idx) => (
                             <div key={idx} style={styles.historyItem}>
                                 <div>
                                     <div style={styles.historyName}>{item.patient}</div>

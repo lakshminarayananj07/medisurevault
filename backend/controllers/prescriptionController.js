@@ -56,17 +56,22 @@ exports.issuePrescription = async (req, res) => {
 };
 
 // ==========================================
-// 2. DISPENSE PRESCRIPTION (Balanced Privacy)
+// 2. DISPENSE PRESCRIPTION (Strict Privacy)
 // ==========================================
 exports.dispensePrescription = async (req, res) => {
     try {
         const { prescriptionId, pharmacistNote } = req.body;
 
-        // Get User ID (Allow null/anonymous if frontend fails)
-        let userId = req.user ? req.user.id : req.body.pharmacistId;
-        if (userId === "null" || userId === "undefined" || userId === "") userId = null;
+        // 1. Get User ID (Prioritize the Auto-ID sent in body)
+        let userId = req.body.pharmacistId || (req.user ? req.user.id : null);
 
-        console.log(`[Controller] Dispensing Rx #${prescriptionId}. User: ${userId || "Anonymous"}`);
+        // 2. STRICT CHECK: We DO NOT allow anonymous dispensing anymore.
+        // Since frontend now generates a "pharm_..." ID, this should always exist.
+        if (!userId || userId === "null" || userId === "undefined") {
+            return res.status(400).json({ success: false, error: "Missing User ID. Cannot dispense anonymously." });
+        }
+
+        console.log(`[Controller] Dispensing Rx #${prescriptionId} by: ${userId}`);
 
         const rxInDb = await Prescription.findOne({ prescriptionId });
         
@@ -74,16 +79,16 @@ exports.dispensePrescription = async (req, res) => {
             return res.status(404).json({ success: false, error: "Prescription not found in Database." });
         }
         
-        // Blockchain Transaction
+        // 3. Blockchain Transaction
         const txHash = await blockchainService.dispensePrescriptionOnChain(
             prescriptionId, 
             pharmacistNote || "Dispensed via Web Dashboard"
         );
 
-        // Update DB
+        // 4. Update DB
         rxInDb.isDispensed = true;
         rxInDb.dispenseDate = new Date();
-        rxInDb.dispensedBy = userId; // Save ID (or null if anonymous)
+        rxInDb.dispensedBy = userId; // CRITICAL: Saves the unique Session ID
         rxInDb.pharmacistNote = pharmacistNote;
         
         await rxInDb.save();
@@ -122,36 +127,35 @@ exports.getPrescriptionById = async (req, res) => {
 };
 
 // ==========================================
-// 4. GET DISPENSE HISTORY (Balanced Privacy)
+// 4. GET DISPENSE HISTORY (Strict Privacy)
 // ==========================================
 exports.getDispenseHistory = async (req, res) => {
     try {
-        let userId = req.user ? req.user.id : req.query.pharmacistId;
+        // 1. Get User ID from Query Params
+        let userId = req.query.pharmacistId || (req.user ? req.user.id : null);
 
-        // Handle string "null" from frontend
-        if (userId === "null" || userId === "undefined" || userId === "") {
-            userId = null;
+        // 2. STRICT CHECK: If ID is missing, return EMPTY list.
+        // We do NOT return global data anymore.
+        if (!userId || userId === "null" || userId === "undefined" || userId === "") {
+            console.log("[History] Blocked: No ID provided.");
+            return res.status(200).json({ 
+                success: true, 
+                count: 0, 
+                data: [] 
+            });
         }
 
-        const query = { isDispensed: true };
-
-        if (userId) {
-            // IF LOGGED IN: Show items dispensed by THIS user
-            query.dispensedBy = userId;
-        } else {
-            // IF NOT LOGGED IN (or Error): Show Anonymous/Global items
-            // This ensures the list is NOT empty if the frontend fails to send an ID
-            query.$or = [
-                { dispensedBy: null },
-                { dispensedBy: { $exists: false } }
-            ];
-        }
+        // 3. Query ONLY for this specific User ID
+        const query = { 
+            isDispensed: true,
+            dispensedBy: userId 
+        };
 
         const history = await Prescription.find(query)
             .sort({ dispenseDate: -1, updatedAt: -1 }) 
             .limit(5);
 
-        console.log(`[History] Fetching for: ${userId || "Anonymous"} | Found: ${history.length}`);
+        console.log(`[History] Fetching for: ${userId} | Found: ${history.length}`);
 
         res.status(200).json({
             success: true,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../hooks/useAppContext';
 import { registerUser } from '../services/apiService';
@@ -34,8 +34,15 @@ const AuthPage = () => {
   const [dob, setDob] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [aadhaar, setAadhaar] = useState('');
-  // NEW: State for the Patient Secret Code
   const [patientCode, setPatientCode] = useState('');
+
+  // --- 1. CLEAR OLD DATA ON LOAD ---
+  useEffect(() => {
+      // Good practice: If user lands on Auth Page, clear any old session
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('my_unique_pharm_id'); // Clear temp IDs too
+  }, []);
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
@@ -44,17 +51,29 @@ const AuthPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const result = await login(username, password, role);
+    try {
+        const result = await login(username, password, role);
 
-    if (result.success) {
-      switch (result.data.user.role) {
-        case 'doctor': navigate('/doctor-dashboard'); break;
-        case 'patient': navigate('/patient-dashboard'); break;
-        case 'pharmacist': navigate('/pharmacist-dashboard'); break;
-        default: break;
-      }
-    } else {
-      alert(result.message);
+        if (result.success) {
+          // --- 2. CRITICAL FIX: SAVE USER TO LOCAL STORAGE ---
+          // This ensures that PharmacistDashboard.js and ScanQR.js can find the user ID
+          if(result.data && result.data.user) {
+              localStorage.setItem('user', JSON.stringify(result.data.user));
+              console.log("✅ Login Successful. User Saved:", result.data.user.username);
+          }
+
+          switch (result.data.user.role) {
+            case 'doctor': navigate('/doctor-dashboard'); break;
+            case 'patient': navigate('/patient-dashboard'); break;
+            case 'pharmacist': navigate('/pharmacist-dashboard'); break;
+            default: break;
+          }
+        } else {
+          alert(result.message);
+        }
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("Login failed. Please check your connection.");
     }
   };
 
@@ -63,7 +82,6 @@ const AuthPage = () => {
     let newUserData = { role, username, password, name };
 
     if (role === 'patient') {
-      // NEW: Include patientCode in the registration data
       newUserData = { ...newUserData, email, mobile, dob, bloodGroup, aadhaar, patientCode };
     } else if (role === 'doctor') {
       newUserData = { ...newUserData, hospitalName, specialization, medicalRegNo };
@@ -86,7 +104,6 @@ const AuthPage = () => {
             <div className="input-group"><label>Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
             <div className="input-group"><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
             
-            {/* NEW: Patient Code Input */}
             <div className="input-group">
                 <label>Create Secret Code (Share with Doctor)</label>
                 <input 
