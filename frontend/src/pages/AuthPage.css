@@ -1,98 +1,254 @@
-.auth-container {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  font-family: Arial, sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
 }
 
-.auth-image-section {
-  width: 50%;
-  height: 100%;
-  background-image: url('https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
-  position: relative;
+/* --- MAIN CONTAINER (Full Screen) --- */
+.auth-container {
+  width: 100vw;
+  height: 100vh;
+  font-family: 'Poppins', sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  overflow: hidden; /* Prevents scrollbars from animation */
+  background-color: #0f172a; /* Fallback color */
 }
 
-.image-overlay {
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 40px;
-  text-align: center;
-  border-radius: 10px;
-}
-
-.image-overlay h1 {
-  margin: 0;
-  font-size: 3rem;
-}
-
-.auth-form-section {
-  width: 50%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start; /* Aligns the form to the top */
-  background-color: #ffffff;
-  overflow-y: auto; /* Enables vertical scrolling if needed */
-  padding: 40px 0; /* Adds some top/bottom padding */
-}
-
-.auth-form {
+/* --- BACKGROUND IMAGE & OVERLAY --- */
+.auth-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 400px;
-  padding: 20px;
+  height: 100%;
+  /* High Quality Medical Background */
+  background-image: url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop'); 
+  background-size: cover;
+  background-position: center;
+  /* Smooth Zoom Animation */
+  animation: bgZoom 30s infinite alternate;
+  z-index: 0;
 }
 
-.auth-form h2 {
+/* Dark Overlay to make the white card pop */
+.auth-background-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6); /* Dark Blue Tint */
+  backdrop-filter: blur(4px); /* Blurs the background image */
+  z-index: 1;
+}
+
+@keyframes bgZoom {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+/* --- CENTERED CARD --- */
+.auth-card {
+  position: relative;
+  z-index: 10;
+  background: #ffffff;
+  width: 100%;
+  max-width: 500px; /* Nice compact width */
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; /* Prevents card from going off-screen on small laptops */
+}
+
+/* --- CARD HEADER (Brand) --- */
+.auth-header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 30px 20px;
   text-align: center;
-  margin-bottom: 30px;
-  color: #333;
+  color: white;
 }
 
+.logo-circle {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 10px auto;
+  color: #38bdf8; /* Medical Blue */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.auth-header p {
+  margin: 5px 0 0 0;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  font-weight: 300;
+}
+
+/* --- FORM CONTENT --- */
+.auth-content {
+  padding: 30px;
+  overflow-y: auto; /* Allows scrolling inside card if form is long */
+}
+
+/* Scrollbar styling for form */
+.auth-content::-webkit-scrollbar {
+  width: 6px;
+}
+.auth-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.auth-content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.form-toggle-title h3 {
+  margin: 0 0 20px 0;
+  color: #334155;
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* --- INPUTS --- */
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .input-group label {
   display: block;
-  margin-bottom: 8px;
-  color: #555;
-  font-weight: bold;
+  margin-bottom: 6px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1rem;
+  z-index: 2;
 }
 
 .input-group input,
 .input-group select {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 12px 12px 12px 42px; /* Space for icon */
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: #1e293b;
+  background-color: #f8fafc;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s;
   box-sizing: border-box;
 }
 
-.auth-button {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  background-color: #000000;
-  color: #ffffff;
-  border-radius: 5px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  outline: none;
 }
 
+/* --- BUTTONS --- */
+.auth-button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border: none;
+  background: #0f172a; /* Dark Blue */
+  color: #ffffff;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.auth-button:hover {
+  background: #2563eb; /* Bright Blue on Hover */
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);
+}
+
+/* --- LINKS --- */
 .toggle-link {
   text-align: center;
   margin-top: 20px;
-  color: #777;
-  cursor: pointer;
+  color: #64748b;
+  font-size: 0.9rem;
 }
 
-.toggle-link strong {
-  color: #000000;
+.toggle-link span {
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.toggle-link span:hover {
+  text-decoration: underline;
+}
+
+/* --- DIVIDER --- */
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.divider span {
+  padding: 0 10px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .auth-card {
+    width: 90%;
+    max-height: 95vh;
+  }
 }

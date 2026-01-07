@@ -158,9 +158,9 @@ router.get('/my-doctors', auth, async (req, res) => {
 
     // 2. Find doctors (Case Insensitive 'doctor' search)
     const doctors = await User.find({
-      role: { $regex: /^doctor$/i }, // Matches 'Doctor', 'doctor', 'DOCTOR'
+      role: { $regex: /^doctor$/i }, 
       addedPatients: { $in: [patientId] } 
-    }).select('name email role _id'); 
+    }).select('name email mobile hospitalName specialization role _id'); // ✅ Added more fields
 
     console.log(`Found ${doctors.length} linked doctors.`);
 

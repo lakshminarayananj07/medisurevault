@@ -284,7 +284,7 @@ const PatientHistory = () => {
                     )}
                 </div>
                 {selectedPatientId && (
-                    <div style={{fontSize:'14px', color:'#059669', backgroundColor:'#d1fae5', padding:'8px 12px', borderRadius:'6px', display:'flex', alignItems:'center', gap:'6px'}}>
+                    <div style={{fontSize:'14px', color:'#059669', backgroundColor:'#d1fae5', padding:'8px 12px', borderRadius:'6px', display:'flex', alignItems:'center', gap:'6px', marginLeft:'60px'}}>
                         <FaStethoscope /> Viewing records for: <strong>{searchTerm}</strong>
                     </div>
                 )}

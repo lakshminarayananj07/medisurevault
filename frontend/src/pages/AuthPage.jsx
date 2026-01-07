@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../hooks/useAppContext';
 import { registerUser } from '../services/apiService';
+import { 
+  FaUser, FaLock, FaEnvelope, FaPhone, FaCalendar, 
+  FaTint, FaIdCard, FaHospital, FaStethoscope, FaFileMedical,
+  FaStore, FaAddressCard, FaKey, FaShieldAlt
+} from 'react-icons/fa';
 import './AuthPage.css';
 
 const AuthPage = () => {
@@ -38,10 +43,9 @@ const AuthPage = () => {
 
   // --- 1. CLEAR OLD DATA ON LOAD ---
   useEffect(() => {
-      // Good practice: If user lands on Auth Page, clear any old session
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      localStorage.removeItem('my_unique_pharm_id'); // Clear temp IDs too
+      localStorage.removeItem('my_unique_pharm_id');
   }, []);
 
   const handleRoleChange = (e) => {
@@ -55,8 +59,6 @@ const AuthPage = () => {
         const result = await login(username, password, role);
 
         if (result.success) {
-          // --- 2. CRITICAL FIX: SAVE USER TO LOCAL STORAGE ---
-          // This ensures that PharmacistDashboard.js and ScanQR.js can find the user ID
           if(result.data && result.data.user) {
               localStorage.setItem('user', JSON.stringify(result.data.user));
               console.log("✅ Login Successful. User Saved:", result.data.user.username);
@@ -84,7 +86,8 @@ const AuthPage = () => {
     if (role === 'patient') {
       newUserData = { ...newUserData, email, mobile, dob, bloodGroup, aadhaar, patientCode };
     } else if (role === 'doctor') {
-      newUserData = { ...newUserData, hospitalName, specialization, medicalRegNo };
+      // ✅ Updated: Included email and mobile in doctor data
+      newUserData = { ...newUserData, hospitalName, specialization, medicalRegNo, email, mobile };
     } else if (role === 'pharmacist') {
       newUserData = { ...newUserData, name, pharmacyName, registrationNumber, drugLicenseNumber };
     }
@@ -96,47 +99,56 @@ const AuthPage = () => {
     }
   };
 
+  // Helper to render input with icon
+  const renderInput = (label, value, setValue, type = "text", icon = null, placeholder = "") => (
+    <div className="input-group">
+      <label>{label}</label>
+      <div className="input-wrapper">
+        {icon && <span className="input-icon">{icon}</span>}
+        <input 
+          type={type} 
+          value={value} 
+          onChange={(e) => setValue(e.target.value)} 
+          required 
+          placeholder={placeholder}
+        />
+      </div>
+    </div>
+  );
+
   const renderSignupFields = () => {
     switch (role) {
       case 'patient':
         return (
           <>
-            <div className="input-group"><label>Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-            <div className="input-group"><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
-            
-            <div className="input-group">
-                <label>Create Secret Code (Share with Doctor)</label>
-                <input 
-                    type="text" 
-                    value={patientCode} 
-                    onChange={(e) => setPatientCode(e.target.value)} 
-                    placeholder="e.g. MyCode@123"
-                    required 
-                />
-            </div>
-
-            <div className="input-group"><label>Mobile Number</label><input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} required /></div>
-            <div className="input-group"><label>Date of Birth</label><input type="date" value={dob} onChange={(e) => setDob(e.target.value)} required /></div>
-            <div className="input-group"><label>Blood Group</label><input type="text" value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} required /></div>
-            <div className="input-group"><label>Aadhaar Number</label><input type="text" value={aadhaar} onChange={(e) => setAadhaar(e.target.value)} required /></div>
+            {renderInput("Full Name", name, setName, "text", <FaUser />)}
+            {renderInput("Email Address", email, setEmail, "email", <FaEnvelope />)}
+            {renderInput("Secret Code (Share with Doctor)", patientCode, setPatientCode, "text", <FaKey />, "e.g. MyCode@123")}
+            {renderInput("Mobile Number", mobile, setMobile, "tel", <FaPhone />)}
+            {renderInput("Date of Birth", dob, setDob, "date", <FaCalendar />)}
+            {renderInput("Blood Group", bloodGroup, setBloodGroup, "text", <FaTint />, "e.g. O+")}
+            {renderInput("Aadhaar Number", aadhaar, setAadhaar, "text", <FaIdCard />)}
           </>
         );
       case 'doctor':
         return (
           <>
-            <div className="input-group"><label>Doctor Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-            <div className="input-group"><label>Hospital Name</label><input type="text" value={hospitalName} onChange={(e) => setHospitalName(e.target.value)} required /></div>
-            <div className="input-group"><label>Specialization</label><input type="text" value={specialization} onChange={(e) => setSpecialization(e.target.value)} required /></div>
-            <div className="input-group"><label>Medical Council Reg. No.</label><input type="text" value={medicalRegNo} onChange={(e) => setMedicalRegNo(e.target.value)} required /></div>
+            {renderInput("Doctor Name", name, setName, "text", <FaUserMd />)}
+            {/* ✅ Updated: Added Email and Mobile fields here */}
+            {renderInput("Email Address", email, setEmail, "email", <FaEnvelope />)}
+            {renderInput("Mobile Number", mobile, setMobile, "tel", <FaPhone />)}
+            {renderInput("Hospital Name", hospitalName, setHospitalName, "text", <FaHospital />)}
+            {renderInput("Specialization", specialization, setSpecialization, "text", <FaStethoscope />)}
+            {renderInput("Medical Council Reg. No.", medicalRegNo, setMedicalRegNo, "text", <FaFileMedical />)}
           </>
         );
       case 'pharmacist':
         return (
           <>
-            <div className="input-group"><label>Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-            <div className="input-group"><label>Pharmacy Name</label><input type="text" value={pharmacyName} onChange={(e) => setPharmacyName(e.target.value)} required /></div>
-            <div className="input-group"><label>State Pharmacy Council Reg. No.</label><input type="text" value={registrationNumber} onChange={(e) => setRegistrationNumber(e.target.value)} required /></div>
-            <div className="input-group"><label>Drug License No.</label><input type="text" value={drugLicenseNumber} onChange={(e) => setDrugLicenseNumber(e.target.value)} required /></div>
+            {renderInput("Pharmacist Name", name, setName, "text", <FaUser />)}
+            {renderInput("Pharmacy Name", pharmacyName, setPharmacyName, "text", <FaStore />)}
+            {renderInput("State Council Reg. No.", registrationNumber, setRegistrationNumber, "text", <FaAddressCard />)}
+            {renderInput("Drug License No.", drugLicenseNumber, setDrugLicenseNumber, "text", <FaFileMedical />)}
           </>
         );
       default:
@@ -144,71 +156,90 @@ const AuthPage = () => {
     }
   };
 
+  // Import Font for UI
+  const FaUserMd = () => <FaUser />; 
+
   return (
     <div className="auth-container">
-      <div className="auth-image-section">
-        <div className="image-overlay">
-          <h1>MediSure Vault</h1>
-          <p>The future of secure prescription management.</p>
+      {/* BACKGROUND OVERLAY */}
+      <div className="auth-background-overlay"></div>
+
+      {/* CENTERED CARD */}
+      <div className="auth-card">
+        
+        {/* BRANDING HEADER */}
+        <div className="auth-header">
+            <div className="logo-circle">
+                <FaShieldAlt />
+            </div>
+            <h1>MediSure Vault</h1>
+            <p>Secure Medical Identity Portal</p>
         </div>
-      </div>
-      <div className="auth-form-section">
-        {isLoginView ? (
-          <form className="auth-form" onSubmit={handleLogin}>
-            <h2>Login</h2>
-            <div className="input-group">
-              <label>Your Role</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)} required>
-                <option value="">-- Select a Role --</option>
-                <option value="patient">Patient</option>
-                <option value="doctor">Doctor</option>
-                <option value="pharmacist">Pharmacist</option>
-              </select>
-            </div>
-            <div className="input-group">
-              <label>Username</label>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-            </div>
-            <div className="input-group">
-              <label>Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </div>
-            <button type="submit" className="auth-button">Login</button>
-            <p className="toggle-link" onClick={() => setIsLoginView(false)}>
-              Don't have an account? <strong>Sign Up</strong>
-            </p>
-          </form>
-        ) : (
-          <form className="auth-form" onSubmit={handleSignup}>
-            <h2>Sign Up</h2>
-            <div className="input-group">
-              <label>First, Select Your Role</label>
-              <select value={role} onChange={handleRoleChange} required>
-                <option value="" disabled>-- Select a Role --</option>
-                <option value="patient">Patient</option>
-                <option value="doctor">Doctor</option>
-                <option value="pharmacist">Pharmacist</option>
-              </select>
-            </div>
-            {isRoleSelected && (
-              <>
-                {renderSignupFields()}
-                <div className="input-group">
-                  <label>Create Username</label>
-                  <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+
+        {/* FORM CONTENT */}
+        <div className="auth-content">
+            {isLoginView ? (
+            <form onSubmit={handleLogin}>
+                <div className="form-toggle-title">
+                    <h3>Sign In</h3>
                 </div>
+
                 <div className="input-group">
-                  <label>Create Password</label>
-                  <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <label>Select Role</label>
+                <div className="input-wrapper">
+                    <select value={role} onChange={(e) => setRole(e.target.value)} required>
+                        <option value="">Select Role</option>
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="pharmacist">Pharmacist</option>
+                    </select>
                 </div>
-                <button type="submit" className="auth-button">Sign Up</button>
-              </>
+                </div>
+
+                {renderInput("Username", username, setUsername, "text", <FaUser />, "Enter username")}
+                {renderInput("Password", password, setPassword, "password", <FaLock />, "Enter password")}
+
+                <button type="submit" className="auth-button">Sign In</button>
+                
+                <p className="toggle-link">
+                New to MediSure? <span onClick={() => setIsLoginView(false)}>Create Account</span>
+                </p>
+            </form>
+            ) : (
+            <form onSubmit={handleSignup}>
+                <div className="form-toggle-title">
+                    <h3>Create Account</h3>
+                </div>
+
+                <div className="input-group">
+                <label>Choose your role</label>
+                <div className="input-wrapper">
+                    <select value={role} onChange={handleRoleChange} required>
+                        <option value="" disabled>Select Role</option>
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="pharmacist">Pharmacist</option>
+                    </select>
+                </div>
+                </div>
+
+                {isRoleSelected && (
+                <>
+                    {renderSignupFields()}
+                    <div className="divider"><span>Credentials</span></div>
+                    {renderInput("Create Username", username, setUsername, "text", <FaUser />)}
+                    {renderInput("Create Password", password, setPassword, "password", <FaLock />)}
+                    
+                    <button type="submit" className="auth-button">Register Account</button>
+                </>
+                )}
+                
+                <p className="toggle-link">
+                Already have an account? <span onClick={() => setIsLoginView(true)}>Sign In</span>
+                </p>
+            </form>
             )}
-            <p className="toggle-link" onClick={() => setIsLoginView(true)}>
-              Already have an account? <strong>Login</strong>
-            </p>
-          </form>
-        )}
+        </div>
       </div>
     </div>
   );

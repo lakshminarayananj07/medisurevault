@@ -1,17 +1,21 @@
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
-  // --- Common Fields ---
+  // --- Common Fields (Shared by ALL roles) ---
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, // Store hashed passwords
+  password: { type: String, required: true },
   role: { type: String, required: true, enum: ['patient', 'doctor', 'pharmacist'] },
   name: { type: String, required: true },
-  email: { type: String, unique: true, sparse: true }, // Optional but unique if provided
+  
+  // ✅ FIX: Moved 'email' and 'mobile' here so ALL users can have them
+  email: { type: String, unique: true, sparse: true }, 
+  mobile: { type: String }, 
   
   // --- Doctor-specific Fields ---
   hospitalName: { type: String },
   specialization: { type: String },
   medicalRegNo: { type: String },
+  // (Removed duplicate 'mobile' from here)
   
   // [CRITICAL FOR SHARING] List of patients linked to this doctor
   addedPatients: [{ 
@@ -20,7 +24,7 @@ const UserSchema = new mongoose.Schema({
   }],
   
   // --- Patient-specific Fields ---
-  mobile: { type: String },
+  // (Removed duplicate 'mobile' from here)
   dob: { type: String },
   address: { type: String },
   bloodGroup: { type: String },

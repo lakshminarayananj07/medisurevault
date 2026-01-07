@@ -336,7 +336,6 @@ const DoctorProfile = () => {
                 {renderField('Qualifications', 'qualification', <FaGraduationCap />)}
 
                 {/* Full Width Info */}
-                {renderField('Clinic / Hospital Address', 'address', <FaMapMarkerAlt />, true)}
             </div>
         </div>
 

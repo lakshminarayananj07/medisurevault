@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./config/db');
+const chatRoutes = require('./routes/chatRoutes');
 
 // --- 1. CONNECT TO DATABASE ---
 connectDB();
@@ -11,6 +12,7 @@ const app = express();
 // --- 2. MIDDLEWARE ---
 app.use(cors());
 app.use(express.json()); // Allows server to accept JSON data
+app.use('/api/chat', chatRoutes);
 
 // --- 3. IMPORT ROUTES ---
 const authRoutes = require('./routes/auth');
